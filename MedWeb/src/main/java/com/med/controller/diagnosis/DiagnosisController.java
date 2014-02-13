@@ -26,12 +26,22 @@ public class DiagnosisController {
 	@Autowired
 	private DiagnosisService diagnosisService;
 	
+	/**
+	 * This method is used to get Med Home Page
+	 * @return ModelAndView
+	 */
 	@RequestMapping(value = "/medHome.htm")
 	public ModelAndView getMedHomePage() {
 		logger.info("Med Home Page");
 		return new ModelAndView(MED_HOME_PAGE);
 	}	
 	
+	/**
+	 * This method is used to get diagnosis details
+	 * @param diagnosis
+	 * @param modelMap
+	 * @return ModelAndView
+	 */
 	@RequestMapping(value = "/diagnosisDetails.htm", method = RequestMethod.POST)
 	public ModelAndView getDiagnosisDetails(@RequestParam("diagnosis") String diagnosis, ModelMap modelMap) {
 		logger.info("Diagnosis Details Page");
@@ -44,7 +54,7 @@ public class DiagnosisController {
 		modelMap.addAttribute("diagnosticChartListData", diagnosisService.getDiagnosticChartListData(diagnosis, diagnosisVertex, symptomAnalysis));
 		modelMap.addAttribute("therapeuticChartListData", diagnosisService.getTherapeuticChartListData(diagnosis));
 		modelMap.addAttribute("medicationChartListData", diagnosisService.getMedicationChartListData(diagnosis));
-		modelMap.addAttribute("upstrmDwnStrmData", diagnosisService.getUpstramDownstreamData(diagnosis));
+		modelMap.addAttribute("upstrmDwnStrmData", diagnosisService.getUpstreamDownstreamData(diagnosis));
 		return new ModelAndView(DIAGNOSIS_DETAILS_PAGE, modelMap);
 	}
 }

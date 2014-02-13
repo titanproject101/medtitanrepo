@@ -215,7 +215,8 @@
 </div>
 <table>
 <tr>
-		<td>		
+		<td>
+				<div class="fbt2 laTXT LH15">Labs, Imaging, Diagnostics</div>		
 				<div id="diagnosticchart" style="width: 700px; height: 500px;">
 					<svg></svg>
 				</div>
@@ -251,7 +252,6 @@
 		</td>
 		<td>
 		<div class="pdT10" style="border-top: 1px solid #f2f2f2;">
-				<div class="fbt2 laTXT LH15">Labs, Imaging, Diagnostics</div>
 				<div class="fbt2 pdT5 msTXT LH15">interactive chart</div>
 				<div id="diagnosticlist" style="width: 400px; height: 500px; padding-right: 20px; overflow-Y: auto;overflow-X: hidden;float: right;">
 				<table border="0" cellpadding="0" cellspacing="0" width="400px">

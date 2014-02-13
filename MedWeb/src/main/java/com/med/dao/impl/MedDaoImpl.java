@@ -44,6 +44,10 @@ public class MedDaoImpl implements MedDao {
 	
 	protected static final Log logger = LogFactory.getLog(MedDaoImpl.class);
 
+	/**
+	 * This method is used to get RexsterClient
+	 * @return RexsterClient
+	 */
 	public RexsterClient getRexsterClient() {
 		if(client == null){
 			try {
@@ -63,6 +67,10 @@ public class MedDaoImpl implements MedDao {
 		return client;
 	}
 
+	/**
+	 * This method is used to get Elastic Search Client
+	 * @return Client
+	 */
 	public Client getESConnection() {
 		if(esClient == null){
 			esClient = new TransportClient(ImmutableSettings.settingsBuilder()
@@ -73,6 +81,10 @@ public class MedDaoImpl implements MedDao {
 		return esClient;
 	}
 
+	/**
+	 * This method is used to get Elastic Search SearchRequestBuilder
+	 * @return SearchRequestBuilder
+	 */
 	public SearchRequestBuilder getESSearchRequestBuilder() {
 		Client client = getESConnection();
 		SearchRequestBuilder requestBuilder = new SearchRequestBuilder(client)

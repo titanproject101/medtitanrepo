@@ -36,7 +36,11 @@ public class DiagnosisServiceImpl implements DiagnosisService {
 	
 	protected static final Log logger = LogFactory.getLog(DiagnosisServiceImpl.class);
 	
-	
+	/**
+	 * This method is used to get diagnosis details by name
+	 * @param diagnosis
+	 * @return Map<String, Object>
+	 */
 	public Map<String, Object> getDiagnosisByName(String diagnosis) {
 		RexsterClient rexsterClient = medDao.getRexsterClient();
 		String script = "g.V.has('GRAPHUNIQUEKEY','" + diagnosis +"').has('collection','DIAGNOSISDEF')";
@@ -62,6 +66,11 @@ public class DiagnosisServiceImpl implements DiagnosisService {
 		return null;
 	}
 	
+	/**
+	 * This method is used to get Gender Bias graph JSON for given diagnosis details
+	 * @param diagnosisVertex
+	 * @return String
+	 */
 	public String getGenderBias(Map<String, Object> diagnosisVertex) {
 		TreeMap<String,Float> GENBIAS=new TreeMap<String,Float>();
 		String gender = (String)diagnosisVertex.get("gender");
@@ -123,6 +132,11 @@ public class DiagnosisServiceImpl implements DiagnosisService {
 		return HD;
 	}
 
+	/**
+	 * This method is used to get SymptomAnalysis for given diagnosis
+	 * @param diagnosis
+	 * @return Map<String, Object>
+	 */
 	public Map<String, Object> getSymptomAnalysis(String diagnosis) {
 		Map<String, Object> symptomAnalysis = new LinkedHashMap<String, Object>(); 
 		RexsterClient rexsterClient = medDao.getRexsterClient();
@@ -229,6 +243,11 @@ public class DiagnosisServiceImpl implements DiagnosisService {
 		return symptomAnalysis;
 	}
 
+	/**
+	 * This method is used Symptom Category Histogram for given diagnosis
+	 * @param diagnosis
+	 * @return Map<String, Float>
+	 */
 	public Map<String, Float> getSymptomCategoryHistogram(String diagnosis) {
 		Map<String, Float> sympCatHisto = new HashMap<String, Float>(10);
 		Map<String, List<String>> sympCatMap = new HashMap<String, List<String>>(3);
@@ -265,6 +284,13 @@ public class DiagnosisServiceImpl implements DiagnosisService {
 		return sympCatHisto;
 	}
 
+	/**
+	 * This method is used to get diagnostic chart data for given diagnosis
+	 * @param diagnosis
+	 * @param diagnosisVertex
+	 * @param symptomAnalysis
+	 * @return Map<String, Object>
+	 */
 	public Map<String, Object> getDiagnosticChartListData(String diagnosis, Map<String, Object> diagnosisVertex, Map<String, Object> symptomAnalysis) {
 		Map<String, Object> diagnosticChart = new HashMap<String, Object>(5);
 		RexsterClient rexsterClient = medDao.getRexsterClient();
@@ -466,6 +492,11 @@ public class DiagnosisServiceImpl implements DiagnosisService {
 		return diagnosticChart;
 	}
 
+	/**
+	 * This method is used to get therapeutic chart Data for given diagnosis
+	 * @param diagnosis
+	 * @return Map<String, Object>
+	 */
 	public Map<String, Object> getTherapeuticChartListData(String diagnosis) {
 		Map<String, Object> therapeuticChart = new HashMap<String, Object>(5);
 		RexsterClient rexsterClient = medDao.getRexsterClient();
@@ -484,6 +515,11 @@ public class DiagnosisServiceImpl implements DiagnosisService {
 		return therapeuticChart;
 	}
 	
+	/**
+	 * This method is used to get medication chart data for given diagnosis
+	 * @param diagnosis
+	 * @return Map<String, Object>
+	 */
 	public Map<String, Object> getMedicationChartListData(String diagnosis) {
 		Map<String, Object> medicationData = new HashMap<String, Object>(5);
 		RexsterClient rexsterClient = medDao.getRexsterClient();
@@ -502,7 +538,12 @@ public class DiagnosisServiceImpl implements DiagnosisService {
 		return medicationData;
 	}
 
-	public Map<String, Object> getUpstramDownstreamData(String diagnosis) {
+	/**
+	 * This method is used to get upstream downstream chart data for given diagnosis
+	 * @param diagnosis
+	 * @return Map<String, Object>
+	 */
+	public Map<String, Object> getUpstreamDownstreamData(String diagnosis) {
 		Map<String, Object> upstreamDownStreamData = new HashMap<String, Object>();
 		RexsterClient rexsterClient = medDao.getRexsterClient();
 		List<String> response = null;
