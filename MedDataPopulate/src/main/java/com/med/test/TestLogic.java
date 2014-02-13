@@ -15,7 +15,6 @@ import org.codehaus.jackson.type.TypeReference;
 
 public class TestLogic {
 	
-	//Class for testing Gremlin queries
 	private static String DIAGNOSIS_JSON_PATH = "D:\\Softwares\\TitanDB\\testdata\\MEDGLE\\newdata\\sample\\diagnosis";
 	private static Set<String> indexStringKeys = new HashSet<String>();
 	private static Set<String> indexDateKeys = new HashSet<String>();
