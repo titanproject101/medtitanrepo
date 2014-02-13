@@ -5,8 +5,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -28,30 +26,22 @@ import com.thinkaurelius.titan.core.TitanVertex;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
-public class DiagSymRelationship {
+public class Relationship {
 	
-	/*private static Set<String> makeKeys = new HashSet<String>();
-	private static Set<String> removeKeys = new HashSet<String>();
-	private static Set<String> reserveKeys = new HashSet<String>(5);*/
-
-	/*public static void main(String[] args) {
-		DiagSymRelationship  diagSymRelationship = new DiagSymRelationship();
-		TitanGraph graph  = TitanDbUtil.getInstance().getTitanGraph();
-		//TitanDbUtil.getInstance().clearGraph(graph);
-		
-		// JSON Elements to be removed
-		removeKeys.add("DOCUMENTTYPE");
-		removeKeys.add("OBJECTTYPE");
-		removeKeys.add("information");
-		removeKeys.add("NESTEDVALUE");
-	
-		// Titan RESERVED Keys
-		reserveKeys.add("id");
-		reserveKeys.add("label");
-		
-		diagSymRelationship.createEdgeFromJSON(graph, SYMPTOM_DIAGNOSIS_RELN_JSON_PATH, "SYMPTOMDIAGNOSISMAP");
-	}*/
-
+	/**
+	 * This method is used to create edge between vertices
+	 * @param graph
+	 * @param JSON_PATH
+	 * @param parentNodeName
+	 * @param reservKeyAppendStr
+	 * @param vertex1Collection
+	 * @param vertex2Collection
+	 * @param makeKeys
+	 * @param removeKeys
+	 * @param reserveKeys
+	 * @param makeLabel
+	 * @param makeTitanLabel
+	 */
 	public void createEdgeFromJSON(TitanGraph graph, String JSON_PATH, String parentNodeName, String reservKeyAppendStr, String vertex1Collection, String vertex2Collection, Set<String> makeKeys, Set<String> removeKeys, Set<String> reserveKeys, Set<String> makeLabel,  Map<String,TitanLabel> makeTitanLabel) {
 		try {
 			ObjectMapper mapper = new ObjectMapper();
@@ -59,10 +49,10 @@ public class DiagSymRelationship {
 			String fieldName = null;
 			boolean isFieldRemoved = false;
 			Iterator<String> fieldNameIterator = null;
-			Vertex symptomVertex = null; 
-			Vertex diagnosisVertex = null; 
-			String symptom = null;
-			String diagnosis = null;
+			Vertex inVertex = null; 
+			Vertex outVertex = null; 
+			String EDGE1KEY = null;
+			String EDGE2KEY = null;
 			Iterator<Vertex> vertexes = null;
 			TitanLabel titanLabel = null;
 			
@@ -76,31 +66,31 @@ public class DiagSymRelationship {
 			// Create Graph
 			for (File jsonFile : files) {
 				System.out.println("Reading File >> " + jsonFile);
-				symptomVertex = null; 
-				diagnosisVertex = null; 
+				inVertex = null; 
+				outVertex = null; 
 				parentNode = mapper.readValue(jsonFile, JsonNode.class).get(parentNodeName);
-				symptom = parentNode.get("**EDGE1KEY**").getTextValue();
-				diagnosis = parentNode.get("**EDGE2KEY**").getTextValue();
+				EDGE1KEY = parentNode.get("**EDGE1KEY**").getTextValue();
+				EDGE2KEY = parentNode.get("**EDGE2KEY**").getTextValue();
 				
 				TitanGraphQuery query = null;
 				
 				// symptom
 				//vertexes = graph.getVertices("GRAPHUNIQUEKEY", symptom).iterator();
 				query = graph.query();
-				vertexes = query.has("GRAPHUNIQUEKEY", symptom).has("collection", vertex1Collection).vertices().iterator();
+				vertexes = query.has("GRAPHUNIQUEKEY", EDGE1KEY).has("collection", vertex1Collection).vertices().iterator();
 				if(vertexes.hasNext()) {
-					symptomVertex = vertexes.next();
+					inVertex = vertexes.next();
 				}
 				
 				// diagnosis
 				//vertexes = graph.getVertices("GRAPHUNIQUEKEY", diagnosis).iterator();
 				query = graph.query();
-				vertexes =  query.has("GRAPHUNIQUEKEY", diagnosis).has("collection", vertex2Collection).vertices().iterator();
+				vertexes =  query.has("GRAPHUNIQUEKEY", EDGE2KEY).has("collection", vertex2Collection).vertices().iterator();
 				if(vertexes.hasNext()) {
-					diagnosisVertex = vertexes.next();
+					outVertex = vertexes.next();
 				}
 				
-				if (symptomVertex != null && diagnosisVertex != null) {
+				if (inVertex != null && outVertex != null) {
 					String label = parentNode.get("**GRAPHUNIQUEKEY**").getTextValue();
 					label = label.replaceAll("_", "").replaceAll("\\s", "");
 					if (!makeLabel.contains(label)) {
@@ -110,7 +100,7 @@ public class DiagSymRelationship {
 					}
 					
 					// Titan Vertexes
-					Edge edge = graph.addEdge(null, symptomVertex, diagnosisVertex, label);
+					Edge edge = graph.addEdge(null, inVertex, outVertex, label);
 					// JSON Nodes
 					fieldNameIterator = parentNode.getFieldNames();
 					while (fieldNameIterator.hasNext()) {
@@ -147,6 +137,18 @@ public class DiagSymRelationship {
 		}
 	}
 	
+	/**
+	 * This method is used to process edge JSON fields, make key if not created before and set properties for edge
+	 * @param graph
+	 * @param edge
+	 * @param fieldName
+	 * @param reservKeyAppendStr
+	 * @param jsonNode
+	 * @param makeKeys
+	 * @param reserveKeys
+	 * @param makeLabel
+	 * @param makeTitanLabel
+	 */
 	private void processJsonFieldAndMakeKey(TitanGraph graph, Edge edge, String fieldName, String reservKeyAppendStr, JsonNode jsonNode, Set<String> makeKeys, Set<String> reserveKeys, Set<String> makeLabel, Map<String,TitanLabel> makeTitanLabel) {
 		try {
 			ObjectMapper mapper = new ObjectMapper();
@@ -212,6 +214,19 @@ public class DiagSymRelationship {
 		}
 	}
 
+	/**
+	 * This method is used to process edge JSON arrays make key if not created before, create Titan relationship for complex objects
+	 * @param graph
+	 * @param edge
+	 * @param fieldName
+	 * @param reservKeyAppendStr
+	 * @param jsonNode
+	 * @param makeKeys
+	 * @param reserveKeys
+	 * @param removeKeys
+	 * @param makeLabel
+	 * @param makeTitanLabel
+	 */
 	private void processJsonArrayAndMakeKey(TitanGraph graph, Edge edge, String fieldName, String reservKeyAppendStr, JsonNode jsonNode,
 			Set<String> makeKeys, Set<String> reserveKeys,Set<String> removeKeys, Set<String> makeLabel, Map<String,TitanLabel> makeTitanLabel) {
 		try {
@@ -269,6 +284,16 @@ public class DiagSymRelationship {
 		}
 	}
 
+	/**
+	 * Create TitanRelationship for titan edge
+	 * @param graph
+	 * @param titanEdge
+	 * @param label
+	 * @param valueListMap
+	 * @param makeLabel
+	 * @param makeKeys
+	 * @param makeTitanLabel
+	 */
 	private void createVertexesWithUnidirectedEdge(TitanGraph graph, TitanEdge titanEdge, String label, List<Map<String, Object>> valueListMap, Set<String> makeLabel, Set<String> makeKeys, Map<String, TitanLabel> makeTitanLabel) {
 		TitanLabel titanLabel = null;
 		label = label.replaceAll("_", "").replaceAll("\\s", "");
@@ -299,6 +324,15 @@ public class DiagSymRelationship {
 		graph.commit();
 	}
 
+	/**
+	 * This method is used to set data types for keys 
+	 * @param graph
+	 * @param titanVertex
+	 * @param key
+	 * @param object
+	 * @param makeKeys
+	 * @return
+	 */
 	private Object setDataTypeAndFormatObject(TitanGraph graph, TitanVertex titanVertex, String key, Object object, Set<String> makeKeys) {
 		KeyMaker keyMaker = null;
 		Class clazz = Object.class;
@@ -373,6 +407,11 @@ public class DiagSymRelationship {
 		return object;
 	}
 	
+	/**
+	 * Remove unwanted fields from json object
+	 * @param jsonNode
+	 * @param removeKeys
+	 */
 	private void removeKeysFromNestedNodes(JsonNode jsonNode, Set<String> removeKeys) {
 		String fieldName = null;
 		Iterator<String> fieldNameIterator = jsonNode.getFieldNames();
