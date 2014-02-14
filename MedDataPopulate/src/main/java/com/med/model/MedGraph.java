@@ -232,61 +232,63 @@ public class MedGraph {
 	 */
 	private void processJsonFieldAndMakeKey(TitanGraph graph, Vertex vertex, String fieldName, JsonNode jsonNode, String reserveKeyExt) {
 		try {
-			ObjectMapper mapper = new ObjectMapper();
-			TypeReference<Map<String,Object>> mapTypeRef = new TypeReference<Map<String,Object>>(){};
-			Map<String, Object> map = null;
-			String jsonText = jsonNode.getTextValue(); // gives value without ""
-			
-			if (jsonText != null) {
+			if (fieldName != null && !fieldName.isEmpty()) {
+				ObjectMapper mapper = new ObjectMapper();
+				TypeReference<Map<String,Object>> mapTypeRef = new TypeReference<Map<String,Object>>(){};
+				Map<String, Object> map = null;
+				String jsonText = jsonNode.getTextValue(); // gives value without ""
 				
-				if (reserveKeys.contains(fieldName)) {
-					fieldName = reserveKeyExt + fieldName;
-				}
-				
-				// date
-				Date date = TitanDbUtil.getInstance().generateDate(jsonText);
-				if (date != null && fieldName.toLowerCase().contains("date")) {
-					if (!makeKeys.contains(fieldName)) {
-						graph.makeKey(fieldName).dataType(Date.class).indexed(Vertex.class).make();
-						makeKeys.add(fieldName);
+				if (jsonText != null) {
+					
+					if (reserveKeys.contains(fieldName)) {
+						fieldName = reserveKeyExt + fieldName;
 					}
-					vertex.setProperty(fieldName, date);
-					return;
-				}
-				
-				// double 
-				try {
-					if (!fieldName.contains("icd") && !fieldName.toLowerCase().contains("_id") && jsonNode.isNumber()) {
+					
+					// date
+					Date date = TitanDbUtil.getInstance().generateDate(jsonText);
+					if (date != null && fieldName.toLowerCase().contains("date")) {
 						if (!makeKeys.contains(fieldName)) {
-							graph.makeKey(fieldName).dataType(Double.class).indexed(TitanDbUtil.ES_INDEX_NAME, Vertex.class).make();
+							graph.makeKey(fieldName).dataType(Date.class).indexed(Vertex.class).make();
 							makeKeys.add(fieldName);
 						}
-						vertex.setProperty(fieldName, jsonNode.getDoubleValue());
+						vertex.setProperty(fieldName, date);
 						return;
 					}
-				} catch (NumberFormatException e) {
 					
-				}
-				
-				// String
-				if (!makeKeys.contains(fieldName)) {
-					graph.makeKey(fieldName).dataType(String.class).indexed(TitanDbUtil.ES_INDEX_NAME, Vertex.class).make();
-					makeKeys.add(fieldName);
-				}
-				vertex.setProperty(fieldName, jsonText);
-			} else {
-				try {
-					// map
-					map = mapper.readValue(jsonNode.toString(), mapTypeRef);
-					if (map != null && !map.isEmpty()) {
-						//vertex.setProperty(fieldName, map);
-						List<Map<String,Object>> valueListMap = new ArrayList<Map<String,Object>>(1);
-						valueListMap.add(map);
-						createVertexesWithUnidirectedEdge(graph, (TitanVertex)vertex, fieldName, valueListMap);
+					// double 
+					try {
+						if (!fieldName.contains("icd") && !fieldName.toLowerCase().contains("_id") && jsonNode.isNumber()) {
+							if (!makeKeys.contains(fieldName)) {
+								graph.makeKey(fieldName).dataType(Double.class).indexed(TitanDbUtil.ES_INDEX_NAME, Vertex.class).make();
+								makeKeys.add(fieldName);
+							}
+							vertex.setProperty(fieldName, jsonNode.getDoubleValue());
+							return;
+						}
+					} catch (NumberFormatException e) {
+						
 					}
-					return;
-				} catch (Exception e) {
-				} 
+					
+					// String
+					if (!makeKeys.contains(fieldName)) {
+						graph.makeKey(fieldName).dataType(String.class).indexed(TitanDbUtil.ES_INDEX_NAME, Vertex.class).make();
+						makeKeys.add(fieldName);
+					}
+					vertex.setProperty(fieldName, jsonText);
+				} else {
+					try {
+						// map
+						map = mapper.readValue(jsonNode.toString(), mapTypeRef);
+						if (map != null && !map.isEmpty()) {
+							//vertex.setProperty(fieldName, map);
+							List<Map<String,Object>> valueListMap = new ArrayList<Map<String,Object>>(1);
+							valueListMap.add(map);
+							createVertexesWithUnidirectedEdge(graph, (TitanVertex)vertex, fieldName, valueListMap);
+						}
+						return;
+					} catch (Exception e) {
+					} 
+				}
 			}
 		} catch(Exception e) {
 			System.out.println("ERROR : Key >>>> " + fieldName);
@@ -305,51 +307,53 @@ public class MedGraph {
 	 */
 	private void processJsonArrayAndMakeKey(TitanGraph graph, Vertex vertex, String fieldName, JsonNode jsonNode, String reserveKeyExt) {
 		try {
-			ObjectMapper mapper = new ObjectMapper();
-			boolean isValueList = false;
-			TitanVertex titanVertex = (TitanVertex) vertex;
-			TypeReference<List<Object>> listTypeRef = new TypeReference<List<Object>>(){};
-			TypeReference<List<Map<String,Object>>> listMapTypeRef = new TypeReference<List<Map<String,Object>>>(){};
-			List<Map<String,Object>> valueListMap = null;
-			List<Object> valueList = null;
-			
-			if (reserveKeys.contains(fieldName)) {
-				fieldName = reserveKeyExt + fieldName;
-			}		
-			
-			if (!makeKeys.contains(fieldName)) {
-				graph.createKeyIndex(fieldName, Vertex.class);
-				makeKeys.add(fieldName);
-			}
-			try {
-				for (int index = 0; index < jsonNode.size(); index++) {
-					removeKeysFromNestedNodes(jsonNode.get(index));
+			if (fieldName != null && !fieldName.isEmpty()) {
+				ObjectMapper mapper = new ObjectMapper();
+				boolean isValueList = false;
+				TitanVertex titanVertex = (TitanVertex) vertex;
+				TypeReference<List<Object>> listTypeRef = new TypeReference<List<Object>>(){};
+				TypeReference<List<Map<String,Object>>> listMapTypeRef = new TypeReference<List<Map<String,Object>>>(){};
+				List<Map<String,Object>> valueListMap = null;
+				List<Object> valueList = null;
+				
+				if (reserveKeys.contains(fieldName)) {
+					fieldName = reserveKeyExt + fieldName;
+				}		
+				
+				if (!makeKeys.contains(fieldName)) {
+					graph.createKeyIndex(fieldName, Vertex.class);
+					makeKeys.add(fieldName);
 				}
-				valueListMap = mapper.readValue(jsonNode.traverse(), listMapTypeRef);
-				if (valueListMap != null && !valueListMap.isEmpty()) {
-					// titanVertex.addProperty(fieldName, valueListMap);
-					createVertexesWithUnidirectedEdge(graph, titanVertex, fieldName, valueListMap);
-				}
-			} catch (JsonParseException e) {
-				e.printStackTrace();
-			} catch (JsonMappingException e) {
-				isValueList = true;
-				//e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			if (isValueList) {
 				try {
-					valueList = mapper.readValue(jsonNode.traverse(), listTypeRef);
-					if (valueList != null && !valueList.isEmpty()) {
-						titanVertex.addProperty(fieldName, valueList);
+					for (int index = 0; index < jsonNode.size(); index++) {
+						removeKeysFromNestedNodes(jsonNode.get(index));
+					}
+					valueListMap = mapper.readValue(jsonNode.traverse(), listMapTypeRef);
+					if (valueListMap != null && !valueListMap.isEmpty()) {
+						// titanVertex.addProperty(fieldName, valueListMap);
+						createVertexesWithUnidirectedEdge(graph, titanVertex, fieldName, valueListMap);
 					}
 				} catch (JsonParseException e) {
 					e.printStackTrace();
 				} catch (JsonMappingException e) {
-					e.printStackTrace();
+					isValueList = true;
+					//e.printStackTrace();
 				} catch (IOException e) {
 					e.printStackTrace();
+				}
+				if (isValueList) {
+					try {
+						valueList = mapper.readValue(jsonNode.traverse(), listTypeRef);
+						if (valueList != null && !valueList.isEmpty()) {
+							titanVertex.addProperty(fieldName, valueList);
+						}
+					} catch (JsonParseException e) {
+						e.printStackTrace();
+					} catch (JsonMappingException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 				}
 			}
 		} catch (Exception e) {

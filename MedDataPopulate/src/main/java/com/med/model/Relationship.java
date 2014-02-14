@@ -151,61 +151,63 @@ public class Relationship {
 	 */
 	private void processJsonFieldAndMakeKey(TitanGraph graph, Edge edge, String fieldName, String reservKeyAppendStr, JsonNode jsonNode, Set<String> makeKeys, Set<String> reserveKeys, Set<String> makeLabel, Map<String,TitanLabel> makeTitanLabel) {
 		try {
-			ObjectMapper mapper = new ObjectMapper();
-			TypeReference<Map<String,Object>> mapTypeRef = new TypeReference<Map<String,Object>>(){};
-			Map<String, Object> map = null;
-			String jsonText = jsonNode.getTextValue(); // gives value without ""
-			if (jsonText != null) {
-				
-				if (reserveKeys.contains(fieldName)) {
-					fieldName = reservKeyAppendStr + fieldName; //  "DIAG_SYS_EDGE_" 
-				}
-				
-				// date
-				Date date = TitanDbUtil.getInstance().generateDate(jsonText);
-				if (date != null && fieldName.toLowerCase().contains("date")) {
-					if (!makeKeys.contains(fieldName)) {
-						graph.makeKey(fieldName).dataType(Date.class).indexed(Edge.class).make();
-						makeKeys.add(fieldName);
+			if (fieldName != null && !fieldName.isEmpty()) {
+				ObjectMapper mapper = new ObjectMapper();
+				TypeReference<Map<String,Object>> mapTypeRef = new TypeReference<Map<String,Object>>(){};
+				Map<String, Object> map = null;
+				String jsonText = jsonNode.getTextValue(); // gives value without ""
+				if (jsonText != null) {
+					
+					if (reserveKeys.contains(fieldName)) {
+						fieldName = reservKeyAppendStr + fieldName; //  "DIAG_SYS_EDGE_" 
 					}
-					edge.setProperty(fieldName, date);
-					return;
-				}
-				
-				// double 
-				try {
-					if (!fieldName.contains("icd") && !fieldName.toLowerCase().contains("_id") && jsonNode.isNumber()) {
+					
+					// date
+					Date date = TitanDbUtil.getInstance().generateDate(jsonText);
+					if (date != null && fieldName.toLowerCase().contains("date")) {
 						if (!makeKeys.contains(fieldName)) {
-							graph.makeKey(fieldName).dataType(Double.class).indexed(TitanDbUtil.ES_INDEX_NAME, Edge.class).make();
+							graph.makeKey(fieldName).dataType(Date.class).indexed(Edge.class).make();
 							makeKeys.add(fieldName);
 						}
-						edge.setProperty(fieldName, jsonNode.getDoubleValue());
+						edge.setProperty(fieldName, date);
 						return;
 					}
-				} catch (NumberFormatException e) {
 					
-				}
-				
-				// String
-				if (!makeKeys.contains(fieldName)) {
-					graph.makeKey(fieldName).dataType(String.class).indexed(TitanDbUtil.ES_INDEX_NAME, Edge.class).make();
-					makeKeys.add(fieldName);
-				}
-				edge.setProperty(fieldName, jsonText);
-			} else {
-				try {
-					// map
-					map = mapper.readValue(jsonNode.toString(), mapTypeRef);
-					if (map != null && !map.isEmpty()) {
-						//edge.setProperty(fieldName, map);
-						List<Map<String,Object>> valueListMap = new ArrayList<Map<String,Object>>(1);
-						valueListMap.add(map);
-						createVertexesWithUnidirectedEdge(graph, (TitanEdge)edge, fieldName, valueListMap, makeLabel, makeKeys, makeTitanLabel);
+					// double 
+					try {
+						if (!fieldName.contains("icd") && !fieldName.toLowerCase().contains("_id") && jsonNode.isNumber()) {
+							if (!makeKeys.contains(fieldName)) {
+								graph.makeKey(fieldName).dataType(Double.class).indexed(TitanDbUtil.ES_INDEX_NAME, Edge.class).make();
+								makeKeys.add(fieldName);
+							}
+							edge.setProperty(fieldName, jsonNode.getDoubleValue());
+							return;
+						}
+					} catch (NumberFormatException e) {
+						
 					}
-					return;
-				} catch (Exception e) {
-					//e.printStackTrace();
-				} 
+					
+					// String
+					if (!makeKeys.contains(fieldName)) {
+						graph.makeKey(fieldName).dataType(String.class).indexed(TitanDbUtil.ES_INDEX_NAME, Edge.class).make();
+						makeKeys.add(fieldName);
+					}
+					edge.setProperty(fieldName, jsonText);
+				} else {
+					try {
+						// map
+						map = mapper.readValue(jsonNode.toString(), mapTypeRef);
+						if (map != null && !map.isEmpty()) {
+							//edge.setProperty(fieldName, map);
+							List<Map<String,Object>> valueListMap = new ArrayList<Map<String,Object>>(1);
+							valueListMap.add(map);
+							createVertexesWithUnidirectedEdge(graph, (TitanEdge)edge, fieldName, valueListMap, makeLabel, makeKeys, makeTitanLabel);
+						}
+						return;
+					} catch (Exception e) {
+						//e.printStackTrace();
+					} 
+				}
 			}
 		} catch (Exception e) {
 			System.out.println("ERROR : Key >>>> " + fieldName);
@@ -230,51 +232,53 @@ public class Relationship {
 	private void processJsonArrayAndMakeKey(TitanGraph graph, Edge edge, String fieldName, String reservKeyAppendStr, JsonNode jsonNode,
 			Set<String> makeKeys, Set<String> reserveKeys,Set<String> removeKeys, Set<String> makeLabel, Map<String,TitanLabel> makeTitanLabel) {
 		try {
-			ObjectMapper mapper = new ObjectMapper();
-			boolean isValueList = false;
-			TypeReference<List<String>> listTypeRef = new TypeReference<List<String>>(){};
-			TypeReference<List<Map<String,Object>>> listMapTypeRef = new TypeReference<List<Map<String,Object>>>(){};
-			List<Map<String,Object>> valueListMap = null;
-			List<String> valueList = null;
-			
-			if (reserveKeys.contains(fieldName)) {
-				fieldName = reservKeyAppendStr + fieldName;
-			}
-			
-			if (!makeKeys.contains(fieldName)) {
-				graph.createKeyIndex(fieldName, Edge.class);
-				makeKeys.add(fieldName);
-			}
-			try {
-				//valueListMap = mapper.readValue(jsonNode.traverse(), listMapTypeRef);
-				for (int index = 0; index < jsonNode.size(); index++) {
-					removeKeysFromNestedNodes(jsonNode.get(index), removeKeys);
+			if (fieldName != null && !fieldName.isEmpty()) {
+				ObjectMapper mapper = new ObjectMapper();
+				boolean isValueList = false;
+				TypeReference<List<String>> listTypeRef = new TypeReference<List<String>>(){};
+				TypeReference<List<Map<String,Object>>> listMapTypeRef = new TypeReference<List<Map<String,Object>>>(){};
+				List<Map<String,Object>> valueListMap = null;
+				List<String> valueList = null;
+				
+				if (reserveKeys.contains(fieldName)) {
+					fieldName = reservKeyAppendStr + fieldName;
 				}
-				valueListMap = mapper.readValue(jsonNode.traverse(), listMapTypeRef);
-				if (valueListMap != null && !valueListMap.isEmpty()) {
-					//edge.setProperty(fieldName, valueListMap);
-					createVertexesWithUnidirectedEdge(graph, (TitanEdge)edge, fieldName, valueListMap, makeLabel, makeKeys, makeTitanLabel);
+				
+				if (!makeKeys.contains(fieldName)) {
+					graph.createKeyIndex(fieldName, Edge.class);
+					makeKeys.add(fieldName);
 				}
-			} catch (JsonParseException e) {
-				e.printStackTrace();
-			} catch (JsonMappingException e) {
-				isValueList = true;
-				//e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			if (isValueList) {
 				try {
-					valueList = mapper.readValue(jsonNode.traverse(), listTypeRef);
-					if (valueList != null && !valueList.isEmpty()) {
-						edge.setProperty(fieldName, valueList);
+					//valueListMap = mapper.readValue(jsonNode.traverse(), listMapTypeRef);
+					for (int index = 0; index < jsonNode.size(); index++) {
+						removeKeysFromNestedNodes(jsonNode.get(index), removeKeys);
+					}
+					valueListMap = mapper.readValue(jsonNode.traverse(), listMapTypeRef);
+					if (valueListMap != null && !valueListMap.isEmpty()) {
+						//edge.setProperty(fieldName, valueListMap);
+						createVertexesWithUnidirectedEdge(graph, (TitanEdge)edge, fieldName, valueListMap, makeLabel, makeKeys, makeTitanLabel);
 					}
 				} catch (JsonParseException e) {
 					e.printStackTrace();
 				} catch (JsonMappingException e) {
-					e.printStackTrace();
+					isValueList = true;
+					//e.printStackTrace();
 				} catch (IOException e) {
 					e.printStackTrace();
+				}
+				if (isValueList) {
+					try {
+						valueList = mapper.readValue(jsonNode.traverse(), listTypeRef);
+						if (valueList != null && !valueList.isEmpty()) {
+							edge.setProperty(fieldName, valueList);
+						}
+					} catch (JsonParseException e) {
+						e.printStackTrace();
+					} catch (JsonMappingException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 				}
 			}
 		} catch (Exception e) {
