@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParseException;
@@ -56,26 +57,26 @@ public class MedGraph {
 	/*************************************** ONSITE FILE PATHS ************************************************/
 	
 	// Vertexes
-	private static String DIAGNOSIS = "/root/titan/populateData/6371836/diagnosis";
-	private static String DIAGNOSISCATEGORY = "/root/titan/populateData/6371836/diagnosiscategory";
-	private static String DIAGNOSTIC = "/root/titan/populateData/6371836/diagnostic";
-	private static String DIAGNOSTICCATEGORY = "/root/titan/populateData/6371836/diagnosticcategory";
-	private static String MED = "/root/titan/populateData/6371836/med";
-	private static String MEDCATEGORY = "/root/titan/populateData/6371836/medcategory";
-	private static String SYMPTOM = "/root/titan/populateData/6371836/symptom";
-	private static String SYMPTOMCATEGORY = "/root/titan/populateData/6371836/symptomcategory";
-	private static String THERAPEUTIC = "/root/titan/populateData/6371836/therapeutic";
+	private static String DIAGNOSIS = "/root/titan/populateData/graphoutput/diagnosis";
+	private static String DIAGNOSISCATEGORY = "/root/titan/populateData/graphoutput/diagnosiscategory";
+	private static String DIAGNOSTIC = "/root/titan/populateData/graphoutput/diagnostic";
+	private static String DIAGNOSTICCATEGORY = "/root/titan/populateData/graphoutput/diagnosticcategory";
+	private static String MED = "/root/titan/populateData/graphoutput/med";
+	private static String MEDCATEGORY = "/root/titan/populateData/graphoutput/medcategory";
+	private static String SYMPTOM = "/root/titan/populateData/graphoutput/symptom";
+	private static String SYMPTOMCATEGORY = "/root/titan/populateData/graphoutput/symptomcategory";
+	private static String THERAPEUTIC = "/root/titan/populateData/graphoutput/therapeutic";
 
 	// Edges:
-	private static String DIAGNOSIS_DIAGNOSIS = "/root/titan/populateData/6371836/diagnosis_diagnosis";
-	private static String DIAGNOSIS_DIAGNOSISCATEGORY = "/root/titan/populateData/6371836/diagnosis_diagnosiscategory";
-	private static String DIAGNOSIS_DIAGNOSTIC = "/root/titan/populateData/6371836/diagnosis_diagnostic";
-	private static String DIAGNOSIS_MED = "/root/titan/populateData/6371836/diagnosis_med";
-	private static String DIAGNOSIS_THERAPEUTIC = "/root/titan/populateData/6371836/diagnosis_therapeutic";
-	private static String DIAGNOSTIC_DIAGNOSTICCATEGORY = "/root/titan/populateData/6371836/diagnostic_diagnosticcategory";
-	private static String MED_MEDCATEGORY = "/root/titan/populateData/6371836/med_medcategory";
-	private static String SYMPTOM_DIAGNOSIS = "/root/titan/populateData/6371836/symptom_diagnosis";
-	private static String SYMPTOM_SYMPTOMCATEGORY = "/root/titan/populateData/6371836/symptom_symptomcategory";
+	private static String DIAGNOSIS_DIAGNOSIS = "/root/titan/populateData/graphoutput/diagnosis_diagnosis";
+	private static String DIAGNOSIS_DIAGNOSISCATEGORY = "/root/titan/populateData/graphoutput/diagnosis_diagnosiscategory";
+	private static String DIAGNOSIS_DIAGNOSTIC = "/root/titan/populateData/graphoutput/diagnosis_diagnostic";
+	private static String DIAGNOSIS_MED = "/root/titan/populateData/graphoutput/diagnosis_med";
+	private static String DIAGNOSIS_THERAPEUTIC = "/root/titan/populateData/graphoutput/diagnosis_therapeutic";
+	private static String DIAGNOSTIC_DIAGNOSTICCATEGORY = "/root/titan/populateData/graphoutput/diagnostic_diagnosticcategory";
+	private static String MED_MEDCATEGORY = "/root/titan/populateData/graphoutput/med_medcategory";
+	private static String SYMPTOM_DIAGNOSIS = "/root/titan/populateData/graphoutput/symptom_diagnosis";
+	private static String SYMPTOM_SYMPTOMCATEGORY = "/root/titan/populateData/graphoutput/symptom_symptomcategory";
 	
 	private static Set<String> makeKeys = new HashSet<String>(20);
 	private static Set<String> removeKeys = new HashSet<String>(20);
@@ -85,7 +86,7 @@ public class MedGraph {
 	
 	public static void main(String[] args) {
 		
-		long start = System.currentTimeMillis();
+		long startTime = new Date().getTime(); // start time
 		
 		MedGraph medGraph = new MedGraph();
 		Relationship relationship = new Relationship();
@@ -133,11 +134,16 @@ public class MedGraph {
 		relationship.createEdgeFromJSON(graph, MED_MEDCATEGORY, "MEDCATEGORYEDGE", "MED_CAT_EDGE_", "MEDICATIONS", "MEDICATIONCATEGORY", makeKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel);
 		
 		
-		long end = System.currentTimeMillis();
+		long endTime = new Date().getTime(); // end time
 		System.out.println("Data Loaded !!!!!!!!!!");
-		System.out.println("Total Executaion Time : " + ((end-start) / 1000)/60 + " minutes");
-		
+		calculateTimeForExecution(endTime - startTime);
 		System.out.println("makeLabel : " + makeLabel);
+	}
+	
+	private static void calculateTimeForExecution(long miliseconds) {
+		System.out.println("**********************calculateTimeForExecution*******************");
+		String time = String.format("%d hrs, %d min, %d sec", TimeUnit.MILLISECONDS.toHours(miliseconds) ,TimeUnit.MILLISECONDS.toMinutes(miliseconds), TimeUnit.MILLISECONDS.toSeconds(miliseconds) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(miliseconds)));
+		System.out.println("Total Time of execution : " + time);
 	}
 	
 	/**

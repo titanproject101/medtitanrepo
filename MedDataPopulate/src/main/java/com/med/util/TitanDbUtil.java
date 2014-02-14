@@ -145,6 +145,7 @@ public class TitanDbUtil {
 		dateFormats.add("MM/dd/yyyy");
 		//dateFormats.add("yyyyMMdd");
 		dateFormats.add("yyyy-MM-dd");
+		dateFormats.add("MMM dd, yyyy");
 		SimpleDateFormat dateFormat = null;
 		for (String format : dateFormats) {
 			dateFormat = new SimpleDateFormat(format);
