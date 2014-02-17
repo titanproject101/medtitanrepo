@@ -77,6 +77,7 @@ public class Relationship {
 				// symptom
 				//vertexes = graph.getVertices("GRAPHUNIQUEKEY", symptom).iterator();
 				query = graph.query();
+				System.out.println("Retriving vertex 1");
 				vertexes = query.has("GRAPHUNIQUEKEY", EDGE1KEY).has("collection", vertex1Collection).vertices().iterator();
 				if(vertexes.hasNext()) {
 					inVertex = vertexes.next();
@@ -85,6 +86,7 @@ public class Relationship {
 				// diagnosis
 				//vertexes = graph.getVertices("GRAPHUNIQUEKEY", diagnosis).iterator();
 				query = graph.query();
+				System.out.println("Retriving vertex 2");
 				vertexes =  query.has("GRAPHUNIQUEKEY", EDGE2KEY).has("collection", vertex2Collection).vertices().iterator();
 				if(vertexes.hasNext()) {
 					outVertex = vertexes.next();
@@ -103,6 +105,7 @@ public class Relationship {
 					Edge edge = graph.addEdge(null, inVertex, outVertex, label);
 					// JSON Nodes
 					fieldNameIterator = parentNode.getFieldNames();
+					System.out.println("setting properties /setting sub vertex");
 					while (fieldNameIterator.hasNext()) {
 						isFieldRemoved = false;
 						fieldName = fieldNameIterator.next();
@@ -201,7 +204,7 @@ public class Relationship {
 							//edge.setProperty(fieldName, map);
 							List<Map<String,Object>> valueListMap = new ArrayList<Map<String,Object>>(1);
 							valueListMap.add(map);
-							createVertexesWithUnidirectedEdge(graph, (TitanEdge)edge, fieldName, valueListMap, makeLabel, makeKeys, makeTitanLabel);
+							createVertexesWithUnidirectedEdge(graph, (TitanEdge)edge, fieldName, valueListMap, makeLabel, makeKeys, reserveKeys, makeTitanLabel);
 						}
 						return;
 					} catch (Exception e) {
@@ -256,7 +259,7 @@ public class Relationship {
 					valueListMap = mapper.readValue(jsonNode.traverse(), listMapTypeRef);
 					if (valueListMap != null && !valueListMap.isEmpty()) {
 						//edge.setProperty(fieldName, valueListMap);
-						createVertexesWithUnidirectedEdge(graph, (TitanEdge)edge, fieldName, valueListMap, makeLabel, makeKeys, makeTitanLabel);
+						createVertexesWithUnidirectedEdge(graph, (TitanEdge)edge, fieldName, valueListMap, makeLabel, makeKeys, reserveKeys, makeTitanLabel);
 					}
 				} catch (JsonParseException e) {
 					e.printStackTrace();
@@ -298,7 +301,7 @@ public class Relationship {
 	 * @param makeKeys
 	 * @param makeTitanLabel
 	 */
-	private void createVertexesWithUnidirectedEdge(TitanGraph graph, TitanEdge titanEdge, String label, List<Map<String, Object>> valueListMap, Set<String> makeLabel, Set<String> makeKeys, Map<String, TitanLabel> makeTitanLabel) {
+	private void createVertexesWithUnidirectedEdge(TitanGraph graph, TitanEdge titanEdge, String label, List<Map<String, Object>> valueListMap, Set<String> makeLabel, Set<String> makeKeys, Set<String> reserveKeys, Map<String, TitanLabel> makeTitanLabel) {
 		TitanLabel titanLabel = null;
 		label = label.replaceAll("_", "").replaceAll("\\s", "");
 		if (!makeLabel.contains(label)) {
@@ -315,7 +318,11 @@ public class Relationship {
 			keys = element.keySet();
 			vertex = graph.addVertex(null);
 			for (String key : keys) {
-				Object object = setDataTypeAndFormatObject(graph, (TitanVertex)vertex, key, element.get(key), makeKeys);
+				Object value = element.get(key);
+				if (reserveKeys.contains(key)) {
+					key = "SUBEDG_" + key;
+				}
+				Object object = setDataTypeAndFormatObject(graph, (TitanVertex)vertex, key, value, makeKeys);
 				if (object != null) {
 					vertex.setProperty(key, object);
 				}

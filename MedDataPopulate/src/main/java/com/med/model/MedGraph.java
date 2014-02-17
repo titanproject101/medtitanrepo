@@ -27,6 +27,7 @@ import com.thinkaurelius.titan.core.TitanLabel;
 import com.thinkaurelius.titan.core.TitanVertex;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.rexster.client.RexsterClient;
 
 public class MedGraph {
 	
@@ -122,6 +123,38 @@ public class MedGraph {
 		medGraph.createVertexFromJSON(graph, THERAPEUTIC, "PROCEDURES", "THERAP_");
 		
 		// Create Edges
+		/*************************TEMP FOR POPULATING EDGES *********************************/
+		/*makeKeys.addAll(graph.getIndexedKeys(Edge.class));
+		Iterator<TitanLabel> labels = graph.getTypes(TitanLabel.class).iterator();
+		while (labels.hasNext()) {
+			TitanLabel titanLabel = (TitanLabel) labels.next();
+			makeTitanLabel.put(titanLabel.getName(), titanLabel);
+			makeLabel.add(titanLabel.getName());			
+		}	
+		
+		/******************************** Remove Old Edges ***********************************************/
+		//int count = 0;
+		/*Iterator<Edge> edges =  graph.getEdges().iterator();
+		while (edges.hasNext()) {
+			Edge edge = (Edge) edges.next();
+			if(edge.getProperty("subvertexedge") == null) {
+				graph.removeEdge(edge);
+				count++;
+			}
+		}
+		graph.commit();
+		System.out.println("Removed Edges Count " + count);*/
+		/****************************************** Get Vertices Count **********************************/
+		/*Iterator<Vertex> vertices = graph.getVertices().iterator();
+		count = 0;
+		while (vertices.hasNext()) {
+			Vertex vertex = (Vertex) vertices.next();
+			count++;
+		}
+		System.out.println("Vertices Count " + count);*/
+		
+		/******************************TEMP END**************************************************/
+		
 		System.out.println("****************************************** Generating Edges *******************************************************");
 		relationship.createEdgeFromJSON(graph, DIAGNOSIS_DIAGNOSIS, "DIAGNOSISDIAGNOSISEDGE", "DIAG_DIAG_EDGE_", "DIAGNOSISDEF", "DIAGNOSISDEF", makeKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel);
 		relationship.createEdgeFromJSON(graph, SYMPTOM_DIAGNOSIS, "SYMPTOMDIAGNOSISMAP","SYS_DIAG_EDGE_", "SMARTSYMPTOM", "DIAGNOSISDEF", makeKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel);
@@ -132,8 +165,7 @@ public class MedGraph {
 		relationship.createEdgeFromJSON(graph, DIAGNOSIS_THERAPEUTIC, "DIAGNOSISTHERAPEUTICEDGE", "DIAG_THERAPEUTIC_EDGE_", "DIAGNOSISDEF", "PROCEDURES", makeKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel);
 		relationship.createEdgeFromJSON(graph, DIAGNOSTIC_DIAGNOSTICCATEGORY, "DIAGNOSTICCATEGORYEDGE", "DIAGNOSTIC_CAT_EDGE_", "PROCEDURES", "DIAGNOSTICCATEGORY", makeKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel);
 		relationship.createEdgeFromJSON(graph, MED_MEDCATEGORY, "MEDCATEGORYEDGE", "MED_CAT_EDGE_", "MEDICATIONS", "MEDICATIONCATEGORY", makeKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel);
-		
-		
+
 		long endTime = new Date().getTime(); // end time
 		System.out.println("Data Loaded !!!!!!!!!!");
 		calculateTimeForExecution(endTime - startTime);
@@ -385,7 +417,11 @@ public class MedGraph {
 			keys = element.keySet();
 			vertex = graph.addVertex(null);
 			for (String key : keys) {
-				Object object = setDataTypeAndFormatObject(graph, (TitanVertex)vertex, key, element.get(key));
+				Object value = element.get(key);
+				if (reserveKeys.contains(key)) {
+					key = "SUBVTX_" + key;
+				}
+				Object object = setDataTypeAndFormatObject(graph, (TitanVertex)vertex, key, value);
 				if (object != null) {
 					vertex.setProperty(key, object);
 				}
