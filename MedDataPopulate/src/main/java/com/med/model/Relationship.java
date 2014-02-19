@@ -42,7 +42,8 @@ public class Relationship {
 	 * @param makeLabel
 	 * @param makeTitanLabel
 	 */
-	public void createEdgeFromJSON(TitanGraph graph, String JSON_PATH, String parentNodeName, String reservKeyAppendStr, String vertex1Collection, String vertex2Collection, Set<String> makeKeys, Set<String> removeKeys, Set<String> reserveKeys, Set<String> makeLabel,  Map<String,TitanLabel> makeTitanLabel) {
+	public void createEdgeFromJSON(TitanGraph graph, String JSON_PATH, String parentNodeName, String reservKeyAppendStr, Set<String> makeKeys, Set<String> removeKeys, 
+			Set<String> reserveKeys, Set<String> makeLabel,  Map<String,TitanLabel> makeTitanLabel, Map<String, Vertex> fromVertices, Map<String, Vertex> toVertices) {
 		try {
 			ObjectMapper mapper = new ObjectMapper();
 			JsonNode parentNode = null;
@@ -55,6 +56,7 @@ public class Relationship {
 			String EDGE2KEY = null;
 			Iterator<Vertex> vertexes = null;
 			TitanLabel titanLabel = null;
+			TitanGraphQuery query = null;
 			
 			// Read all files
 			File dir = new File(JSON_PATH);
@@ -72,25 +74,26 @@ public class Relationship {
 				EDGE1KEY = parentNode.get("**EDGE1KEY**").getTextValue();
 				EDGE2KEY = parentNode.get("**EDGE2KEY**").getTextValue();
 				
-				TitanGraphQuery query = null;
-				
 				// symptom
 				//vertexes = graph.getVertices("GRAPHUNIQUEKEY", symptom).iterator();
-				query = graph.query();
+				/*query = graph.query();
 				System.out.println("Retriving vertex 1");
 				vertexes = query.has("GRAPHUNIQUEKEY", EDGE1KEY).has("collection", vertex1Collection).vertices().iterator();
 				if(vertexes.hasNext()) {
 					inVertex = vertexes.next();
-				}
+				}*/
+				inVertex = fromVertices.get(EDGE1KEY);
 				
 				// diagnosis
 				//vertexes = graph.getVertices("GRAPHUNIQUEKEY", diagnosis).iterator();
-				query = graph.query();
+				/*query = graph.query();
 				System.out.println("Retriving vertex 2");
 				vertexes =  query.has("GRAPHUNIQUEKEY", EDGE2KEY).has("collection", vertex2Collection).vertices().iterator();
 				if(vertexes.hasNext()) {
 					outVertex = vertexes.next();
-				}
+				}*/
+				
+				outVertex = toVertices.get(EDGE2KEY);
 				
 				if (inVertex != null && outVertex != null) {
 					String label = parentNode.get("**GRAPHUNIQUEKEY**").getTextValue();
@@ -105,7 +108,7 @@ public class Relationship {
 					Edge edge = graph.addEdge(null, inVertex, outVertex, label);
 					// JSON Nodes
 					fieldNameIterator = parentNode.getFieldNames();
-					System.out.println("setting properties /setting sub vertex");
+					//System.out.println("setting properties /setting sub vertex");
 					while (fieldNameIterator.hasNext()) {
 						isFieldRemoved = false;
 						fieldName = fieldNameIterator.next();
@@ -247,10 +250,6 @@ public class Relationship {
 					fieldName = reservKeyAppendStr + fieldName;
 				}
 				
-				if (!makeKeys.contains(fieldName)) {
-					graph.createKeyIndex(fieldName, Edge.class);
-					makeKeys.add(fieldName);
-				}
 				try {
 					//valueListMap = mapper.readValue(jsonNode.traverse(), listMapTypeRef);
 					for (int index = 0; index < jsonNode.size(); index++) {
@@ -270,6 +269,10 @@ public class Relationship {
 					e.printStackTrace();
 				}
 				if (isValueList) {
+					if (!makeKeys.contains(fieldName)) {
+						graph.createKeyIndex(fieldName, Edge.class);
+						makeKeys.add(fieldName);
+					}
 					try {
 						valueList = mapper.readValue(jsonNode.traverse(), listTypeRef);
 						if (valueList != null && !valueList.isEmpty()) {

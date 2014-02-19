@@ -28,8 +28,9 @@ public class TitanDbUtil {
 	private static TitanDbUtil titanDbUtil = null;
 	
 	/****offshore****/
-	public static final String HOSTNAME =  "192.168.10.204";// "192.168.10.204" "192.168.10.136"
+	public static final String HOSTNAME =  "127.0.0.1";// "192.168.10.204" "192.168.10.136"
 	public static final String ES_INDEX_NAME = "titan"; // "titan" "patient"
+	private static final String ES_DIR_PATH = "/root/titan/MED/db/es";//"D:\\softwares\\TitanDB\\installations\\apache-cassandra-2.0.5\\db\\es";
 	public static final String STORAGE_BACKEND = "cassandra";
 	public static final String STORAGE_INDEX_BACKEND = "elasticsearch";
 	public static final String STORAGE_CLUSTER_NAME = "MEDGRAPH";
@@ -71,9 +72,10 @@ public class TitanDbUtil {
 		conf.setProperty("storage.hostname",HOSTNAME);
 		conf.setProperty("storage.keyspace",KEYSPACE);
 		//conf.setProperty("storage.port",9160);
-		conf.setProperty("storage.batch-loading","true");
+		//conf.setProperty("storage.batch-loading","true");
+		conf.setProperty("storage.index."  + ES_INDEX_NAME + ".directory", ES_DIR_PATH);
 		conf.setProperty("storage.index."  + ES_INDEX_NAME + ".backend", STORAGE_INDEX_BACKEND);
-		conf.setProperty("storage.index."  + ES_INDEX_NAME + ".hostname", HOSTNAME);
+		//conf.setProperty("storage.index."  + ES_INDEX_NAME + ".hostname", HOSTNAME);
 		conf.setProperty("storage.index."  + ES_INDEX_NAME + ".cluster-name", STORAGE_CLUSTER_NAME);
 		conf.setProperty("storage.index."  + ES_INDEX_NAME + ".client-only", false);
 		conf.setProperty("storage.index."  + ES_INDEX_NAME + ".local-mode", true);
