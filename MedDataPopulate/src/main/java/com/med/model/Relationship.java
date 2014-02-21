@@ -49,6 +49,7 @@ public class Relationship {
 			JsonNode parentNode = null;
 			String fieldName = null;
 			boolean isFieldRemoved = false;
+			int count = 0;
 			Iterator<String> fieldNameIterator = null;
 			Vertex inVertex = null; 
 			Vertex outVertex = null; 
@@ -67,6 +68,7 @@ public class Relationship {
 			});
 			// Create Graph
 			for (File jsonFile : files) {
+				count++;
 				System.out.println("Reading File >> " + jsonFile);
 				inVertex = null; 
 				outVertex = null; 
@@ -135,6 +137,11 @@ public class Relationship {
 					}
 				}
 				graph.commit();
+				/*if (count > 60000) {
+					break;
+				} else {
+					jsonFile.delete();
+				}*/
 			}
 		} catch (JsonParseException e) {
 			e.printStackTrace();
