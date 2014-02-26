@@ -42,7 +42,7 @@ public class Relationship {
 	 * @param makeLabel
 	 * @param makeTitanLabel
 	 */
-	public void createEdgeFromJSON(TitanGraph graph, String JSON_PATH, String parentNodeName, String reservKeyAppendStr, Set<String> makeKeys, Set<String> removeKeys, 
+	public void createEdgeFromJSON(TitanGraph graph, String JSON_PATH, String parentNodeName, String reservKeyAppendStr, Set<String> makeKeys, Set<String> vertexKeys, Set<String> removeKeys, 
 			Set<String> reserveKeys, Set<String> makeLabel,  Map<String,TitanLabel> makeTitanLabel, Map<String, Vertex> fromVertices, Map<String, Vertex> toVertices) {
 		try {
 			ObjectMapper mapper = new ObjectMapper();
@@ -129,15 +129,15 @@ public class Relationship {
 								fieldName = fieldName.replace("*", "");
 							}
 							if (jsonNode.isArray()) {
-								processJsonArrayAndMakeKey(graph, edge, fieldName, reservKeyAppendStr, jsonNode, makeKeys, reserveKeys, removeKeys, makeLabel, makeTitanLabel);
+								processJsonArrayAndMakeKey(graph, edge, fieldName, reservKeyAppendStr, jsonNode, makeKeys, vertexKeys, reserveKeys, removeKeys, makeLabel, makeTitanLabel);
 							} else {
-								processJsonFieldAndMakeKey(graph, edge, fieldName, reservKeyAppendStr, jsonNode, makeKeys, reserveKeys, makeLabel, makeTitanLabel);
+								processJsonFieldAndMakeKey(graph, edge, fieldName, reservKeyAppendStr, jsonNode, makeKeys, vertexKeys, reserveKeys, makeLabel, makeTitanLabel);
 							}
 						}
 					}
 				}
 				graph.commit();
-				/*if (count > 60000) {
+				/*if (count > 80000) {
 					break;
 				} else {
 					jsonFile.delete();
@@ -162,7 +162,7 @@ public class Relationship {
 	 * @param makeLabel
 	 * @param makeTitanLabel
 	 */
-	private void processJsonFieldAndMakeKey(TitanGraph graph, Edge edge, String fieldName, String reservKeyAppendStr, JsonNode jsonNode, Set<String> makeKeys, Set<String> reserveKeys, Set<String> makeLabel, Map<String,TitanLabel> makeTitanLabel) {
+	private void processJsonFieldAndMakeKey(TitanGraph graph, Edge edge, String fieldName, String reservKeyAppendStr, JsonNode jsonNode, Set<String> makeKeys, Set<String> vertexKeys, Set<String> reserveKeys, Set<String> makeLabel, Map<String,TitanLabel> makeTitanLabel) {
 		try {
 			if (fieldName != null && !fieldName.isEmpty()) {
 				ObjectMapper mapper = new ObjectMapper();
@@ -173,6 +173,10 @@ public class Relationship {
 					
 					if (reserveKeys.contains(fieldName)) {
 						fieldName = reservKeyAppendStr + fieldName; //  "DIAG_SYS_EDGE_" 
+					}
+					
+					if (vertexKeys.contains(fieldName)) {
+						fieldName = "edge_" + fieldName;
 					}
 					
 					// date
@@ -190,7 +194,7 @@ public class Relationship {
 					try {
 						if (!fieldName.contains("icd") && !fieldName.toLowerCase().contains("_id") && jsonNode.isNumber()) {
 							if (!makeKeys.contains(fieldName)) {
-								graph.makeKey(fieldName).dataType(Double.class).indexed(TitanDbUtil.ES_INDEX_NAME, Edge.class).make();
+								graph.makeKey(fieldName).dataType(Double.class).indexed(Edge.class).indexed(TitanDbUtil.ES_INDEX_NAME, Edge.class).make();
 								makeKeys.add(fieldName);
 							}
 							edge.setProperty(fieldName, jsonNode.getDoubleValue());
@@ -202,7 +206,7 @@ public class Relationship {
 					
 					// String
 					if (!makeKeys.contains(fieldName)) {
-						graph.makeKey(fieldName).dataType(String.class).indexed(TitanDbUtil.ES_INDEX_NAME, Edge.class).make();
+						graph.makeKey(fieldName).dataType(String.class).indexed(Edge.class).indexed(TitanDbUtil.ES_INDEX_NAME, Edge.class).make();
 						makeKeys.add(fieldName);
 					}
 					edge.setProperty(fieldName, jsonText);
@@ -214,7 +218,7 @@ public class Relationship {
 							//edge.setProperty(fieldName, map);
 							List<Map<String,Object>> valueListMap = new ArrayList<Map<String,Object>>(1);
 							valueListMap.add(map);
-							createVertexesWithUnidirectedEdge(graph, (TitanEdge)edge, fieldName, valueListMap, makeLabel, makeKeys, reserveKeys, makeTitanLabel);
+							createVertexesWithUnidirectedEdge(graph, (TitanEdge)edge, fieldName, valueListMap, makeLabel, makeKeys, vertexKeys, reserveKeys, makeTitanLabel);
 						}
 						return;
 					} catch (Exception e) {
@@ -243,7 +247,7 @@ public class Relationship {
 	 * @param makeTitanLabel
 	 */
 	private void processJsonArrayAndMakeKey(TitanGraph graph, Edge edge, String fieldName, String reservKeyAppendStr, JsonNode jsonNode,
-			Set<String> makeKeys, Set<String> reserveKeys,Set<String> removeKeys, Set<String> makeLabel, Map<String,TitanLabel> makeTitanLabel) {
+			Set<String> makeKeys, Set<String> vertexKeys, Set<String> reserveKeys,Set<String> removeKeys, Set<String> makeLabel, Map<String,TitanLabel> makeTitanLabel) {
 		try {
 			if (fieldName != null && !fieldName.isEmpty()) {
 				ObjectMapper mapper = new ObjectMapper();
@@ -265,7 +269,7 @@ public class Relationship {
 					valueListMap = mapper.readValue(jsonNode.traverse(), listMapTypeRef);
 					if (valueListMap != null && !valueListMap.isEmpty()) {
 						//edge.setProperty(fieldName, valueListMap);
-						createVertexesWithUnidirectedEdge(graph, (TitanEdge)edge, fieldName, valueListMap, makeLabel, makeKeys, reserveKeys, makeTitanLabel);
+						createVertexesWithUnidirectedEdge(graph, (TitanEdge)edge, fieldName, valueListMap, makeLabel, makeKeys, vertexKeys, reserveKeys, makeTitanLabel);
 					}
 				} catch (JsonParseException e) {
 					e.printStackTrace();
@@ -276,8 +280,14 @@ public class Relationship {
 					e.printStackTrace();
 				}
 				if (isValueList) {
+					
+					if (vertexKeys.contains(fieldName)) {
+						fieldName = "edge_" + fieldName;
+					}
+					
 					if (!makeKeys.contains(fieldName)) {
-						graph.createKeyIndex(fieldName, Edge.class);
+						//graph.createKeyIndex(fieldName, Edge.class);
+						graph.makeKey(fieldName).dataType(Object.class).indexed(Edge.class).make();
 						makeKeys.add(fieldName);
 					}
 					try {
@@ -311,7 +321,8 @@ public class Relationship {
 	 * @param makeKeys
 	 * @param makeTitanLabel
 	 */
-	private void createVertexesWithUnidirectedEdge(TitanGraph graph, TitanEdge titanEdge, String label, List<Map<String, Object>> valueListMap, Set<String> makeLabel, Set<String> makeKeys, Set<String> reserveKeys, Map<String, TitanLabel> makeTitanLabel) {
+	private void createVertexesWithUnidirectedEdge(TitanGraph graph, TitanEdge titanEdge, String label, List<Map<String, Object>> valueListMap,
+			Set<String> makeLabel, Set<String> makeKeys, Set<String> vertexKeys, Set<String> reserveKeys, Map<String, TitanLabel> makeTitanLabel) {
 		TitanLabel titanLabel = null;
 		label = label.replaceAll("_", "").replaceAll("\\s", "");
 		if (!makeLabel.contains(label)) {
@@ -332,7 +343,7 @@ public class Relationship {
 				if (reserveKeys.contains(key)) {
 					key = "SUBEDG_" + key;
 				}
-				Object object = setDataTypeAndFormatObject(graph, (TitanVertex)vertex, key, value, makeKeys);
+				Object object = setDataTypeAndFormatObject(graph, (TitanVertex)vertex, key, value, makeKeys, vertexKeys);
 				if (object != null) {
 					vertex.setProperty(key, object);
 				}
@@ -352,9 +363,10 @@ public class Relationship {
 	 * @param key
 	 * @param object
 	 * @param makeKeys
+	 * @param vertexKeys 
 	 * @return
 	 */
-	private Object setDataTypeAndFormatObject(TitanGraph graph, TitanVertex titanVertex, String key, Object object, Set<String> makeKeys) {
+	private Object setDataTypeAndFormatObject(TitanGraph graph, TitanVertex titanVertex, String key, Object object, Set<String> makeKeys, Set<String> vertexKeys) {
 		KeyMaker keyMaker = null;
 		Class clazz = Object.class;
 		boolean isString = true;
@@ -366,7 +378,7 @@ public class Relationship {
 			return null;
 		}
 		
-		if (!makeKeys.contains(key)) {
+		if (!makeKeys.contains(key) && !vertexKeys.contains(key)) {
 			keyMaker = graph.makeKey(key);
 			makeKeys.add(key);
 		}
@@ -419,7 +431,7 @@ public class Relationship {
 		
 		if (keyMaker != null) {
 			if (isPrimiOrString) {
-				keyMaker.dataType(clazz).indexed(TitanDbUtil.ES_INDEX_NAME ,Vertex.class).make();
+				keyMaker.dataType(clazz).indexed(Vertex.class).indexed(TitanDbUtil.ES_INDEX_NAME ,Vertex.class).make();
 			} else {
 				keyMaker.dataType(clazz).indexed(Vertex.class).make();
 			}			

@@ -30,32 +30,6 @@ import com.tinkerpop.blueprints.Vertex;
 
 public class MedGraph {
 	
-	/*************************************** OFFSHORE FILE PATHS ************************************************/
-	
-	// Vertexes
-	/*private static String DIAGNOSIS = "D:\\softwares\\TitanDB\\testdata\\MEDDATA\\graphoutput\\diagnosis";
-	private static String DIAGNOSISCATEGORY = "D:\\softwares\\TitanDB\\testdata\\MEDDATA\\graphoutput\\diagnosiscategory";
-	private static String DIAGNOSTIC = "D:\\softwares\\TitanDB\\testdata\\MEDDATA\\graphoutput\\diagnostic";
-	private static String DIAGNOSTICCATEGORY = "D:\\softwares\\TitanDB\\testdata\\MEDDATA\\graphoutput\\diagnosticcategory";
-	private static String MED = "D:\\softwares\\TitanDB\\testdata\\MEDDATA\\graphoutput\\med";
-	private static String MEDCATEGORY = "D:\\softwares\\TitanDB\\testdata\\MEDDATA\\graphoutput\\medcategory";
-	private static String SYMPTOM = "D:\\softwares\\TitanDB\\testdata\\MEDDATA\\graphoutput\\symptom";
-	private static String SYMPTOMCATEGORY = "D:\\softwares\\TitanDB\\testdata\\MEDDATA\\graphoutput\\symptomcategory";
-	private static String THERAPEUTIC = "D:\\softwares\\TitanDB\\testdata\\MEDDATA\\graphoutput\\therapeutic";
-	private static String THERAPEUTICCATEGORY = "/root/titan/populateData/graphoutput/therapeuticcategory";
-	private static String PHYSICIANCATEGORY = "/root/titan/populateData/graphoutput/physiciancategory";*/
-
-	// Edges:
-	/*private static String DIAGNOSIS_DIAGNOSIS = "D:\\softwares\\TitanDB\\testdata\\MEDDATA\\graphoutput\\diagnosis_diagnosis";
-	private static String DIAGNOSIS_DIAGNOSISCATEGORY = "D:\\softwares\\TitanDB\\testdata\\MEDDATA\\graphoutput\\diagnosis_diagnosiscategory";
-	private static String DIAGNOSIS_DIAGNOSTIC = "D:\\softwares\\TitanDB\\testdata\\MEDDATA\\graphoutput\\diagnosis_diagnostic";
-	private static String DIAGNOSIS_MED = "D:\\softwares\\TitanDB\\testdata\\MEDDATA\\graphoutput\\diagnosis_med";
-	private static String DIAGNOSIS_THERAPEUTIC = "D:\\softwares\\TitanDB\\testdata\\MEDDATA\\graphoutput\\diagnosis_therapeutic";
-	private static String DIAGNOSTIC_DIAGNOSTICCATEGORY = "D:\\softwares\\TitanDB\\testdata\\MEDDATA\\graphoutput\\diagnostic_diagnosticcategory";
-	private static String MED_MEDCATEGORY = "D:\\softwares\\TitanDB\\testdata\\MEDDATA\\graphoutput\\med_medcategory";
-	private static String SYMPTOM_DIAGNOSIS = "D:\\softwares\\TitanDB\\testdata\\MEDDATA\\graphoutput\\symptom_diagnosis";
-	private static String SYMPTOM_SYMPTOMCATEGORY = "D:\\softwares\\TitanDB\\testdata\\MEDDATA\\graphoutput\\symptom_symptomcategory";*/
-	
 	/*************************************** ONSITE FILE PATHS ************************************************/
 	
 	// Vertexes
@@ -88,7 +62,9 @@ public class MedGraph {
 	private static Set<String> removeKeys = new HashSet<String>(20);
 	private static Set<String> reserveKeys = new HashSet<String>(5);
 	private static Set<String> makeLabel = new HashSet<String>(20);
+	private static Set<String> vertexKeys = new HashSet<String>(20);
 	private static Map<String, TitanLabel> makeTitanLabel = new HashMap<String, TitanLabel>();
+	private static Map<String, String> changeKeys = new HashMap<String, String>();
 	
 	public static Map<String, Vertex> DIAGNOSIS_MAP = new HashMap<String,Vertex>();
 	public static Map<String, Vertex> DIAGNOSISCATEGORY_MAP = new HashMap<String,Vertex>();
@@ -128,12 +104,17 @@ public class MedGraph {
 		reserveKeys.add("id");
 		reserveKeys.add("label");
 		
+		// Titan change keys 
+		changeKeys.put("**NESTED**", "NESTED");
+		changeKeys.put("**VALUE**", "VALUE");
+		
+		
 		// Generate Common keys At the start of graph generation i.e. before creating vertices and edges
 		//medGraph.generateCommonKeys(graph);
 		
 		// Create Vertices
 		System.out.println("****************************************** Generating Vertices *******************************************************");
-		/*medGraph.createVertexFromJSON(graph, DIAGNOSIS, "DIAGNOSISDEF", "DIAG_");
+		medGraph.createVertexFromJSON(graph, DIAGNOSIS, "DIAGNOSISDEF", "DIAG_");
 		medGraph.createVertexFromJSON(graph, DIAGNOSISCATEGORY, "DIAGNOSISCATEGORY", "DIAG_CAT_");
 		medGraph.createVertexFromJSON(graph, DIAGNOSTIC, "PROCEDURES", "DIAGNOSTIC_");
 		medGraph.createVertexFromJSON(graph, DIAGNOSTICCATEGORY, "DIAGNOSTICCATEGORY", "DIAGNOSTIC_CAT");
@@ -143,12 +124,12 @@ public class MedGraph {
 		medGraph.createVertexFromJSON(graph, SYMPTOMCATEGORY, "SYMPTOMCATEGORY", "SYMP_CAT_");
 		medGraph.createVertexFromJSON(graph, THERAPEUTIC, "PROCEDURES", "THERAP_");
 		medGraph.createVertexFromJSON(graph, THERAPEUTICCATEGORY, "THERAPEUTICCATEGORY", "THERAPCAT_");
-		medGraph.createVertexFromJSON(graph, PHYSICIANCATEGORY, "PHYSICIANCATEGORY", "PHYSCAT_");*/
+		medGraph.createVertexFromJSON(graph, PHYSICIANCATEGORY, "PHYSICIANCATEGORY", "PHYSCAT_");
 		
 		// Create Edges
 		/*************************TEMP FOR POPULATING EDGES *********************************/
 		makeKeys.addAll(graph.getIndexedKeys(Edge.class));
-		makeKeys.addAll(graph.getIndexedKeys(Vertex.class));
+		vertexKeys.addAll(graph.getIndexedKeys(Vertex.class));
 		//makeKeys.addAll(graph.getIndexedKeys(Vertex.class));
 		Iterator<TitanLabel> labels = graph.getTypes(TitanLabel.class).iterator();
 		while (labels.hasNext()) {
@@ -225,32 +206,19 @@ public class MedGraph {
 		System.out.println("noCollection " + noCollection.size());
 		System.out.println("Vertices AGGR. " + count);
 		
-		/******************************TEMP END**************************************************/
-		/*
-		relationship.createEdgeFromJSON(graph, DIAGNOSIS_DIAGNOSIS, "DIAGNOSISDIAGNOSISEDGE", "DIAG_DIAG_EDGE_", "DIAGNOSISDEF", "DIAGNOSISDEF", makeKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel);
-		relationship.createEdgeFromJSON(graph, SYMPTOM_DIAGNOSIS, "SYMPTOMDIAGNOSISMAP","SYS_DIAG_EDGE_", "SMARTSYMPTOM", "DIAGNOSISDEF", makeKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel);
-		relationship.createEdgeFromJSON(graph, SYMPTOM_SYMPTOMCATEGORY, "SYMPTOMCATEGORYEDGE", "SYMP_CAT_EDGE_", "SMARTSYMPTOM", "SYMPTOMCATEGORY", makeKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel);
-		relationship.createEdgeFromJSON(graph, DIAGNOSIS_DIAGNOSISCATEGORY, "DIAGNOSISCATEGORYEDGE", "DIAG_CAT_EDGE_","DIAGNOSISDEF", "DIAGNOSISCATEGORY",  makeKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel);
-		relationship.createEdgeFromJSON(graph, DIAGNOSIS_DIAGNOSTIC, "DIAGNOSISDIAGNOSTICEDGE", "DIAG_DIAGNOSTIC_EDGE_", "DIAGNOSISDEF", "PROCEDURES", makeKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel);
-		relationship.createEdgeFromJSON(graph, DIAGNOSIS_MED , "DIAGNOSISMEDEDGE", "DIAG_MED_EDGE_", "DIAGNOSISDEF", "MEDICATIONS", makeKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel);
-		relationship.createEdgeFromJSON(graph, DIAGNOSIS_THERAPEUTIC, "DIAGNOSISTHERAPEUTICEDGE", "DIAG_THERAPEUTIC_EDGE_", "DIAGNOSISDEF", "PROCEDURES", makeKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel);
-		relationship.createEdgeFromJSON(graph, DIAGNOSTIC_DIAGNOSTICCATEGORY, "DIAGNOSTICCATEGORYEDGE", "DIAGNOSTIC_CAT_EDGE_", "PROCEDURES", "DIAGNOSTICCATEGORY", makeKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel);
-		relationship.createEdgeFromJSON(graph, MED_MEDCATEGORY, "MEDCATEGORYEDGE", "MED_CAT_EDGE_", "MEDICATIONS", "MEDICATIONCATEGORY", makeKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel);
-		*/
-		
 		System.out.println("****************************************** Generating Graph Edges *******************************************************");
-		/*relationship.createEdgeFromJSON(graph, DIAGNOSIS_DIAGNOSIS, "DIAGNOSISDIAGNOSISEDGE", "DIAG_DIAG_EDGE_", makeKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel, DIAGNOSIS_MAP, DIAGNOSIS_MAP);
-		relationship.createEdgeFromJSON(graph, DIAGNOSIS_DIAGNOSISCATEGORY, "DIAGNOSISCATEGORYEDGE", "DIAG_CAT_EDGE_", makeKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel, DIAGNOSIS_MAP, DIAGNOSISCATEGORY_MAP);
-		relationship.createEdgeFromJSON(graph, DIAGNOSTIC_DIAGNOSTICCATEGORY, "DIAGNOSTICCATEGORYEDGE", "DIAGNOSTIC_CAT_EDGE_", makeKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel, DIAGNOSTIC_MAP, DIAGNOSTICCATEGORY_MAP);
-		relationship.createEdgeFromJSON(graph, MED_MEDCATEGORY, "MEDCATEGORYEDGE", "MED_CAT_EDGE_", makeKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel, MED_MAP, MEDCATEGORY_MAP);
-		relationship.createEdgeFromJSON(graph, DIAGNOSIS_MED , "DIAGNOSISMEDEDGE", "DIAG_MED_EDGE_", makeKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel, DIAGNOSIS_MAP, MED_MAP);
-		relationship.createEdgeFromJSON(graph, DIAGNOSIS_THERAPEUTIC, "DIAGNOSISTHERAPEUTICEDGE", "DIAG_THERAPEUTIC_EDGE_", makeKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel, DIAGNOSIS_MAP, THERAPEUTIC_MAP);
-		relationship.createEdgeFromJSON(graph, SYMPTOM_SYMPTOMCATEGORY, "SYMPTOMCATEGORYEDGE", "SYMP_CAT_EDGE_", makeKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel, SYMPTOM_MAP, SYMPTOMCATEGORY_MAP);
-		relationship.createEdgeFromJSON(graph, DIAGNOSIS_DIAGNOSTIC, "DIAGNOSISDIAGNOSTICEDGE", "DIAG_DIAGNOSTIC_EDGE_", makeKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel, DIAGNOSIS_MAP, DIAGNOSTIC_MAP);
-		relationship.createEdgeFromJSON(graph, THERAPEUTIC_THERAPCATEGORY, "THERAPEUTICCATEGORYEDGE","THERAP_CAT_EDGE_", makeKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel, THERAPEUTIC_MAP, THERAPEUTIC_CAT);
-		relationship.createEdgeFromJSON(graph, SYMPTOM_MED, "SYMPTOMMEDMAP","SYS_MED_EDGE_", makeKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel, SYMPTOM_MAP, MED_MAP);
-		relationship.createEdgeFromJSON(graph, SYMPTOM_DIAGNOSIS, "SYMPTOMDIAGNOSISMAP","SYS_DIAG_EDGE_", makeKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel, SYMPTOM_MAP, DIAGNOSIS_MAP);
-		*/
+		relationship.createEdgeFromJSON(graph, DIAGNOSIS_DIAGNOSIS, "DIAGNOSISDIAGNOSISEDGE", "DIAG_DIAG_EDGE_", makeKeys, vertexKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel, DIAGNOSIS_MAP, DIAGNOSIS_MAP);
+		relationship.createEdgeFromJSON(graph, DIAGNOSIS_DIAGNOSISCATEGORY, "DIAGNOSISCATEGORYEDGE", "DIAG_CAT_EDGE_", makeKeys, vertexKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel, DIAGNOSIS_MAP, DIAGNOSISCATEGORY_MAP);
+		relationship.createEdgeFromJSON(graph, DIAGNOSTIC_DIAGNOSTICCATEGORY, "DIAGNOSTICCATEGORYEDGE", "DIAGNOSTIC_CAT_EDGE_", makeKeys, vertexKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel, DIAGNOSTIC_MAP, DIAGNOSTICCATEGORY_MAP);
+		relationship.createEdgeFromJSON(graph, MED_MEDCATEGORY, "MEDCATEGORYEDGE", "MED_CAT_EDGE_", makeKeys, vertexKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel, MED_MAP, MEDCATEGORY_MAP);
+		relationship.createEdgeFromJSON(graph, DIAGNOSIS_MED , "DIAGNOSISMEDEDGE", "DIAG_MED_EDGE_", makeKeys, vertexKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel, DIAGNOSIS_MAP, MED_MAP);
+		relationship.createEdgeFromJSON(graph, DIAGNOSIS_THERAPEUTIC, "DIAGNOSISTHERAPEUTICEDGE", "DIAG_THERAPEUTIC_EDGE_", makeKeys, vertexKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel, DIAGNOSIS_MAP, THERAPEUTIC_MAP);
+		relationship.createEdgeFromJSON(graph, SYMPTOM_SYMPTOMCATEGORY, "SYMPTOMCATEGORYEDGE", "SYMP_CAT_EDGE_", makeKeys, vertexKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel, SYMPTOM_MAP, SYMPTOMCATEGORY_MAP);
+		relationship.createEdgeFromJSON(graph, DIAGNOSIS_DIAGNOSTIC, "DIAGNOSISDIAGNOSTICEDGE", "DIAG_DIAGNOSTIC_EDGE_", makeKeys, vertexKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel, DIAGNOSIS_MAP, DIAGNOSTIC_MAP);
+		relationship.createEdgeFromJSON(graph, THERAPEUTIC_THERAPCATEGORY, "THERAPEUTICCATEGORYEDGE","THERAP_CAT_EDGE_", makeKeys, vertexKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel, THERAPEUTIC_MAP, THERAPEUTICCATEGORY_MAP);
+		relationship.createEdgeFromJSON(graph, SYMPTOM_MED, "SYMPTOMMEDMAP","SYS_MED_EDGE_", makeKeys, removeKeys, vertexKeys, reserveKeys, makeLabel, makeTitanLabel, SYMPTOM_MAP, MED_MAP);
+		relationship.createEdgeFromJSON(graph, SYMPTOM_DIAGNOSIS, "SYMPTOMDIAGNOSISMAP","SYS_DIAG_EDGE_", makeKeys, vertexKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel, SYMPTOM_MAP, DIAGNOSIS_MAP);
+
 		long endTime = new Date().getTime(); // end time
 		System.out.println("Data Loaded !!!!!!!!!!");
 		calculateTimeForExecution(endTime - startTime);
@@ -272,8 +240,8 @@ public class MedGraph {
 			graph.makeKey(key).dataType(String.class).indexed(Vertex.class).indexed(Edge.class).indexed(TitanDbUtil.ES_INDEX_NAME, Vertex.class).indexed(TitanDbUtil.ES_INDEX_NAME, Edge.class).make();
 		}
 		// Sub vertex and Sub vertex edge
-		graph.makeKey("subvertexedge").dataType(String.class).indexed(TitanDbUtil.ES_INDEX_NAME, Edge.class).make();
-		graph.makeKey("subedge").dataType(String.class).indexed(TitanDbUtil.ES_INDEX_NAME, Vertex.class).make();
+		graph.makeKey("subvertexedge").dataType(String.class).indexed(Vertex.class).indexed(Edge.class).indexed(TitanDbUtil.ES_INDEX_NAME, Edge.class).make();
+		graph.makeKey("subedge").dataType(String.class).indexed(Vertex.class).indexed(Edge.class).indexed(TitanDbUtil.ES_INDEX_NAME, Vertex.class).make();
 		graph.commit();
 	}
 
@@ -376,7 +344,7 @@ public class MedGraph {
 					try {
 						if (!fieldName.contains("icd") && !fieldName.toLowerCase().contains("_id") && jsonNode.isNumber()) {
 							if (!makeKeys.contains(fieldName)) {
-								graph.makeKey(fieldName).dataType(Double.class).indexed(TitanDbUtil.ES_INDEX_NAME, Vertex.class).make();
+								graph.makeKey(fieldName).dataType(Double.class).indexed(Vertex.class).indexed(TitanDbUtil.ES_INDEX_NAME, Vertex.class).make();
 								makeKeys.add(fieldName);
 							}
 							vertex.setProperty(fieldName, jsonNode.getDoubleValue());
@@ -388,7 +356,7 @@ public class MedGraph {
 					
 					// String
 					if (!makeKeys.contains(fieldName)) {
-						graph.makeKey(fieldName).dataType(String.class).indexed(TitanDbUtil.ES_INDEX_NAME, Vertex.class).make();
+						graph.makeKey(fieldName).dataType(String.class).indexed(Vertex.class).indexed(TitanDbUtil.ES_INDEX_NAME, Vertex.class).make();
 						makeKeys.add(fieldName);
 					}
 					vertex.setProperty(fieldName, jsonText);
@@ -456,7 +424,8 @@ public class MedGraph {
 				}
 				if (isValueList) {
 					if (!makeKeys.contains(fieldName)) {
-						graph.createKeyIndex(fieldName, Vertex.class);
+						//graph.createKeyIndex(fieldName, Vertex.class);
+						graph.makeKey(fieldName).dataType(Object.class).indexed(Vertex.class).make();
 						makeKeys.add(fieldName);
 					}
 					try {
@@ -590,7 +559,7 @@ public class MedGraph {
 		
 		if (keyMaker != null) {
 			if (isPrimiOrString) {
-				keyMaker.dataType(clazz).indexed(TitanDbUtil.ES_INDEX_NAME ,Vertex.class).make();
+				keyMaker.dataType(clazz).indexed(Vertex.class).indexed(TitanDbUtil.ES_INDEX_NAME ,Vertex.class).make();
 			} else {
 				keyMaker.dataType(clazz).indexed(Vertex.class).make();
 			}			
@@ -605,7 +574,9 @@ public class MedGraph {
 	 */
 	private void removeKeysFromNestedNodes(JsonNode jsonNode) {
 		String fieldName = null;
+		ObjectMapper mapper = new ObjectMapper();
 		Iterator<String> fieldNameIterator = jsonNode.getFieldNames();
+		boolean isJsonChanged = false;
 		while (fieldNameIterator.hasNext()) {
 			fieldName = fieldNameIterator.next();
 			if (removeKeys.contains(fieldName)) {
@@ -616,8 +587,29 @@ public class MedGraph {
 					}
 				}
 			}
-			if (fieldName.contains("*")) {
+			/*if (fieldName.contains("*")) {
 				fieldName = fieldName.replace("*", "");
+			}*/
+		}
+		Set<String> changeKeySet = changeKeys.keySet();
+		String value = null;
+		String jsonStr = jsonNode.toString();
+		for (String key : changeKeySet) {
+			value = changeKeys.get(key);
+			if (jsonStr.contains(key)) {
+				jsonStr = jsonStr.replace(key, value);
+				isJsonChanged = true;
+			}
+		}
+		if (isJsonChanged) {
+			try {
+				jsonNode = mapper.readValue(jsonStr, JsonNode.class);
+			} catch (JsonParseException e) {
+				System.out.println("JSON parsing exception for subvertex");
+			} catch (JsonMappingException e) {
+				System.out.println("JSON mapping exception for subvertex");
+			} catch (IOException e) {
+				System.out.println("JSON IOException exception for subvertex");
 			}
 		}
 	}

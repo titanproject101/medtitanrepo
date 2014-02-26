@@ -72,13 +72,13 @@ public class TitanDbUtil {
 		conf.setProperty("storage.hostname",HOSTNAME);
 		conf.setProperty("storage.keyspace",KEYSPACE);
 		//conf.setProperty("storage.port",9160);
-		//conf.setProperty("storage.batch-loading","true");
-		conf.setProperty("storage.index."  + ES_INDEX_NAME + ".directory", ES_DIR_PATH);
+		conf.setProperty("storage.batch-loading","true");
+		//conf.setProperty("storage.index."  + ES_INDEX_NAME + ".directory", ES_DIR_PATH);
 		conf.setProperty("storage.index."  + ES_INDEX_NAME + ".backend", STORAGE_INDEX_BACKEND);
-		//conf.setProperty("storage.index."  + ES_INDEX_NAME + ".hostname", HOSTNAME);
+		conf.setProperty("storage.index."  + ES_INDEX_NAME + ".hostname", HOSTNAME);
 		conf.setProperty("storage.index."  + ES_INDEX_NAME + ".cluster-name", STORAGE_CLUSTER_NAME);
-		conf.setProperty("storage.index."  + ES_INDEX_NAME + ".client-only", false);
-		conf.setProperty("storage.index."  + ES_INDEX_NAME + ".local-mode", true);
+		conf.setProperty("storage.index."  + ES_INDEX_NAME + ".client-only", true);
+		//conf.setProperty("storage.index."  + ES_INDEX_NAME + ".local-mode", true);
 		return TitanFactory.open(conf);
 	}
 	
