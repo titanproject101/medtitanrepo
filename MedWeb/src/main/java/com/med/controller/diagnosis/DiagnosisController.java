@@ -20,21 +20,21 @@ public class DiagnosisController {
 
 	protected static final Log logger = LogFactory.getLog(DiagnosisController.class);
 	
-	private static final String MED_HOME_PAGE = "/jsp/med/medHome.jsp";
+	private static final String DIAGNOSIS_SEARCH_DETAILS_PAGE = "/jsp/med/diagnosis/diagnosisSearch.jsp";
 	private static final String DIAGNOSIS_DETAILS_PAGE = "/jsp/med/diagnosis/diagnosisDetails.jsp";
 	
 	@Autowired
 	private DiagnosisService diagnosisService;
 	
 	/**
-	 * This method is used to get Med Home Page
-	 * @return ModelAndView
+	 * This method is used to get diagnosis search page
+	 * @param modelMap
+	 * @return
 	 */
-	@RequestMapping(value = "/medHome.htm")
-	public ModelAndView getMedHomePage() {
-		logger.info("Med Home Page");
-		return new ModelAndView(MED_HOME_PAGE);
-	}	
+	@RequestMapping(value = "/diagnosisDetails.htm", method = RequestMethod.GET)
+	public ModelAndView getDiagnosisSearchPage(ModelMap modelMap) {
+		return new ModelAndView(DIAGNOSIS_SEARCH_DETAILS_PAGE);
+	}
 	
 	/**
 	 * This method is used to get diagnosis details

@@ -5,19 +5,10 @@
 		<div style="float: right;">
 			<a href="<c:url value="j_spring_security_logout" />" >Logout</a>
 		</div>
-		<form action="${basePath}/diagnosisDetails.htm" method="POST">
-			<table>
-				<tr>
-					<td>Enter Diagnosis To Search: </td>
-					<td><input name="diagnosis"></td>
-				</tr>
-				<tr>
-					<td colspan="2">
-						<input type="submit"/>
-					</td>
-				</tr>
-			</table>
-		</form>
+		<div style="float: left; ">
+			<a href="${basePath}/diagnosisDetails.htm">Diagnosis Details</a></br>
+			<a href="${basePath}/symptomDiagnosisSearch.htm">Symptom Diagnosis</a>
+		</div>
 	 </div>
 	</body>
 </html>
