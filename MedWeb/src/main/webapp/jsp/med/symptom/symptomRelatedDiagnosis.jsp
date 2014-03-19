@@ -5,6 +5,8 @@
        <script type="text/javascript">
 			jQuery(document).ready(function ($) { // wait until the document is ready
 				$('#searchsympdiag').click(function() {
+					$('#sympDiagDetails').empty();
+					$('#sympDiagDetails').append("<b style='float:left;'>Please Wait ...</b>");
 					$("body").css("cursor", "progress");
 					var symptom = $("#symptom").val();
 					var age = $("#age").val();
@@ -17,7 +19,11 @@
 					    success: function(response) {
 					      //  alert('Load was performed.');
 					       var results = response.results;
-					       var html = "<b style='float:left;'>Top 20 Diagnosis</b></br><table border='1'>";
+					       var html = "";
+					       html = html + "</br><div style='float:left;'><b># of diagnosis : </b>" + results.length + "</div>";
+					       html = html + "</br><div style='float:left;'><b>Query Time : </b>" + response.queryTime + " ms </div>";
+					       html = html + "</br><div style='float:left;'><b>Top 20 Diagnosis</b></div>";
+					       html = html + "</br><table border='1'>";
 					       $.each(results, function(i, item) {
 					    	   html = html + "<tr><td>"+results[i][0]+"</td></tr>";
 					    	   return i < 20;
@@ -28,7 +34,9 @@
 					       $("body").css("cursor", "default");
 					    },
 					    error: function(){
-					      //  alert('Fuuuuuuuuuuuuuu');
+					    	$("body").css("cursor", "default");
+					    	$('#sympDiagDetails').empty();
+					        alert('Error !!!!');
 					    }
 					});				
 					//alert('Fail');				
