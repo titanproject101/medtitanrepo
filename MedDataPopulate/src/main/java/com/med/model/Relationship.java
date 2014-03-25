@@ -98,8 +98,9 @@ public class Relationship {
 				outVertex = toVertices.get(EDGE2KEY);
 				
 				if (inVertex != null && outVertex != null) {
-					String label = parentNode.get("**GRAPHUNIQUEKEY**").getTextValue();
+					String label = parentNode.get("collection").getTextValue();
 					label = label.replaceAll("_", "").replaceAll("\\s", "");
+					System.out.println("Edge Label : " + label);
 					if (!makeLabel.contains(label)) {
 						titanLabel = graph.makeLabel(label).make();
 						makeLabel.add(label);

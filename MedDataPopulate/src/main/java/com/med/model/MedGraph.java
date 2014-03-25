@@ -18,6 +18,7 @@ import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
+import org.codehaus.jettison.json.JSONObject;
 
 import com.med.util.TitanDbUtil;
 import com.thinkaurelius.titan.core.KeyMaker;
@@ -29,8 +30,6 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
 public class MedGraph {
-	
-	/*************************************** ONSITE FILE PATHS ************************************************/
 	
 	// Vertexes
 	private static String DIAGNOSIS = "/root/titan/populateData/graphoutput/diagnosis";
@@ -126,11 +125,36 @@ public class MedGraph {
 		medGraph.createVertexFromJSON(graph, THERAPEUTICCATEGORY, "THERAPEUTICCATEGORY", "THERAPCAT_");
 		medGraph.createVertexFromJSON(graph, PHYSICIANCATEGORY, "PHYSICIANCATEGORY", "PHYSCAT_");
 		
+		
+		/******************************** Remove Old Edges ***********************************************/
+		/*System.out.println("Removing actual edges");
+		try {
+			count = 0;
+			int deletedEdges = 0;
+			Iterator<Edge> edges =  graph.getEdges().iterator();
+			while (edges.hasNext()) {
+				Edge edge = (Edge) edges.next();
+				if(edge.getProperty("subvertexedge") == null) {
+					graph.removeEdge(edge);
+					count++;
+					deletedEdges++;
+					if (deletedEdges == 10000) {
+						deletedEdges = 0;
+						graph.commit();
+					}
+				}
+			}
+			graph.commit();
+			System.out.println("Removed Edges Count " + count);
+		} catch(Exception e) {
+			graph.commit();
+		}*/
+		
 		// Create Edges
 		/*************************TEMP FOR POPULATING EDGES *********************************/
 		makeKeys.addAll(graph.getIndexedKeys(Edge.class));
 		vertexKeys.addAll(graph.getIndexedKeys(Vertex.class));
-		//makeKeys.addAll(graph.getIndexedKeys(Vertex.class));
+		makeKeys.addAll(graph.getIndexedKeys(Vertex.class));
 		Iterator<TitanLabel> labels = graph.getTypes(TitanLabel.class).iterator();
 		while (labels.hasNext()) {
 			TitanLabel titanLabel = (TitanLabel) labels.next();
@@ -138,18 +162,6 @@ public class MedGraph {
 			makeLabel.add(titanLabel.getName());			
 		}
 		
-		/******************************** Remove Old Edges ***********************************************/
-		//int count = 0;
-		/*Iterator<Edge> edges =  graph.getEdges().iterator();
-		while (edges.hasNext()) {
-			Edge edge = (Edge) edges.next();
-			if(edge.getProperty("subvertexedge") == null) {
-				graph.removeEdge(edge);
-				count++;
-			}
-		}
-		graph.commit();
-		System.out.println("Removed Edges Count " + count);*/
 		/****************************************** Get Vertices Count **********************************/
 		Iterator<Vertex> vertices = graph.getVertices().iterator();
 		count = 0;
@@ -206,6 +218,8 @@ public class MedGraph {
 		System.out.println("noCollection " + noCollection.size());
 		System.out.println("Vertices AGGR. " + count);
 		
+		/******************************TEMP END**************************************************/
+		
 		System.out.println("****************************************** Generating Graph Edges *******************************************************");
 		relationship.createEdgeFromJSON(graph, DIAGNOSIS_DIAGNOSIS, "DIAGNOSISDIAGNOSISEDGE", "DIAG_DIAG_EDGE_", makeKeys, vertexKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel, DIAGNOSIS_MAP, DIAGNOSIS_MAP);
 		relationship.createEdgeFromJSON(graph, DIAGNOSIS_DIAGNOSISCATEGORY, "DIAGNOSISCATEGORYEDGE", "DIAG_CAT_EDGE_", makeKeys, vertexKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel, DIAGNOSIS_MAP, DIAGNOSISCATEGORY_MAP);
@@ -218,7 +232,7 @@ public class MedGraph {
 		relationship.createEdgeFromJSON(graph, THERAPEUTIC_THERAPCATEGORY, "THERAPEUTICCATEGORYEDGE","THERAP_CAT_EDGE_", makeKeys, vertexKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel, THERAPEUTIC_MAP, THERAPEUTICCATEGORY_MAP);
 		relationship.createEdgeFromJSON(graph, SYMPTOM_MED, "SYMPTOMMEDMAP","SYS_MED_EDGE_", makeKeys, removeKeys, vertexKeys, reserveKeys, makeLabel, makeTitanLabel, SYMPTOM_MAP, MED_MAP);
 		relationship.createEdgeFromJSON(graph, SYMPTOM_DIAGNOSIS, "SYMPTOMDIAGNOSISMAP","SYS_DIAG_EDGE_", makeKeys, vertexKeys, removeKeys, reserveKeys, makeLabel, makeTitanLabel, SYMPTOM_MAP, DIAGNOSIS_MAP);
-
+		
 		long endTime = new Date().getTime(); // end time
 		System.out.println("Data Loaded !!!!!!!!!!");
 		calculateTimeForExecution(endTime - startTime);
