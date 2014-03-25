@@ -54,9 +54,9 @@ public class MedDaoImpl implements MedDao {
 				 BaseConfiguration conf = new BaseConfiguration() {{
 					   addProperty(RexsterClientTokens.CONFIG_HOSTNAME, HOSTNAME);
 					   addProperty(RexsterClientTokens.CONFIG_GRAPH_NAME, GRAPH_NAME);
-					   addProperty(RexsterClientTokens.CONFIG_TIMEOUT_CONNECTION_MS, 20000);
-					   addProperty(RexsterClientTokens.CONFIG_TIMEOUT_READ_MS, 20000);
-					   addProperty(RexsterClientTokens.CONFIG_TIMEOUT_WRITE_MS, 20000);
+					   addProperty(RexsterClientTokens.CONFIG_TIMEOUT_CONNECTION_MS, 6000000);
+					   addProperty(RexsterClientTokens.CONFIG_TIMEOUT_READ_MS, 6000000);
+					   addProperty(RexsterClientTokens.CONFIG_TIMEOUT_WRITE_MS, 6000000);
 					   addProperty(RexsterClientTokens.CONFIG_MESSAGE_RETRY_WAIT_MS, 0);
 				 }};
 				 client = RexsterClientFactory.open(conf);
