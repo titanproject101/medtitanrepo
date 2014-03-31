@@ -3,11 +3,14 @@ package com.med.service.app.impl;
 import java.io.IOException;
 import java.util.List;
 
+import javax.script.ScriptEngine;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.med.dao.MedDao;
 import com.med.service.app.MedService;
+import com.thinkaurelius.titan.core.TitanGraph;
 import com.tinkerpop.rexster.client.RexProException;
 import com.tinkerpop.rexster.client.RexsterClient;
 
@@ -44,6 +47,15 @@ public class MedServiceImpl implements MedService {
 			e.printStackTrace();
 		}
 		return 0;
+	}
+
+	public TitanGraph getTitanGraph() {
+		return medDao.getTitanGraph();
+	}
+
+	@SuppressWarnings("restriction")
+	public ScriptEngine getScriptEngine() {
+		return medDao.getScriptEngine();
 	}
 
 }

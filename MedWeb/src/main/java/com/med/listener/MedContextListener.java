@@ -19,6 +19,8 @@ public class MedContextListener implements ServletContextListener {
 		long edgesCount = medService.getEdgesCount();
 		applicationCtx.getServletContext().setAttribute("verticesCount", verticesCount);
 		applicationCtx.getServletContext().setAttribute("edgesCount", edgesCount);
+		medService.getScriptEngine();
+		medService.getTitanGraph();
 	}
 
 	public void contextDestroyed(ServletContextEvent sce) {

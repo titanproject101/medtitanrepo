@@ -1,6 +1,10 @@
 package com.med.dao.impl;
 
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+
 import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -12,6 +16,8 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.stereotype.Component;
 
 import com.med.dao.MedDao;
+import com.thinkaurelius.titan.core.TitanFactory;
+import com.thinkaurelius.titan.core.TitanGraph;
 import com.tinkerpop.rexster.client.RexsterClient;
 import com.tinkerpop.rexster.client.RexsterClientFactory;
 import com.tinkerpop.rexster.client.RexsterClientTokens;
@@ -22,25 +28,28 @@ public class MedDaoImpl implements MedDao {
 	//private static TitanDbUtil titanDbUtil = null;
 	
 	/****offshore****/
-	private static final String HOSTNAME =  "192.168.10.204";// "192.168.10.204" "192.168.10.136"
+	/*private static final String HOSTNAME =  "192.168.10.204";// "192.168.10.204" "192.168.10.136"
 	private static final String ES_INDEX_NAME = "titan"; // "titan" "patient"
 	private static final String STORAGE_BACKEND = "cassandra";
 	private static final String STORAGE_INDEX_BACKEND = "elasticsearch";
 	private static final String STORAGE_CLUSTER_NAME = "MEDGRAPH";
 	private static final String GRAPH_NAME = "patientgraph"; // "graph" "patientgraph"
 	private static final String KEYSPACE = "patient"; // "titan" "patient"
-	
+*/	
 	/**** onsite ****/
-	/*private static final String HOSTNAME =  "192.168.0.2";
+	private static final String HOSTNAME =  "127.0.0.1";
 	private static final String ES_INDEX_NAME = "titan";
 	private static final String STORAGE_BACKEND = "cassandra";
 	private static final String STORAGE_INDEX_BACKEND = "elasticsearch";
 	private static final String STORAGE_CLUSTER_NAME = "MEDGRAPH";
 	private static final String GRAPH_NAME = "patientgraph";
-	private static final String KEYSPACE = "patient";*/
+	private static final String KEYSPACE = "patient";
 	
 	private RexsterClient client = null;
 	private TransportClient esClient = null;
+	private static TitanGraph titanGraph = null;
+	@SuppressWarnings("restriction")
+	private static ScriptEngine scriptEngine = null;
 	
 	protected static final Log logger = LogFactory.getLog(MedDaoImpl.class);
 
@@ -92,5 +101,39 @@ public class MedDaoImpl implements MedDao {
 		.setIndices(ES_INDEX_NAME)
 		.setSize(1);
 		return requestBuilder;
+	}
+
+	/**
+	 * This method is used to get TitanGraph connection
+	 * @return TitanGraph
+	 */
+	public TitanGraph getTitanGraph() {
+		if(titanGraph == null) {
+			try {
+				Configuration conf	= new BaseConfiguration();
+				conf.setProperty("storage.backend",STORAGE_BACKEND);
+				conf.setProperty("storage.hostname",HOSTNAME);
+				conf.setProperty("storage.keyspace",KEYSPACE);
+				conf.setProperty("storage.batch-loading","true");
+				conf.setProperty("storage.index."  + ES_INDEX_NAME + ".backend", STORAGE_INDEX_BACKEND);
+				conf.setProperty("storage.index."  + ES_INDEX_NAME + ".hostname", HOSTNAME);
+				conf.setProperty("storage.index."  + ES_INDEX_NAME + ".cluster-name", STORAGE_CLUSTER_NAME);
+				conf.setProperty("storage.index."  + ES_INDEX_NAME + ".client-only", false);
+				conf.setProperty("storage.index."  + ES_INDEX_NAME + ".local-mode", false);
+				titanGraph = TitanFactory.open(conf);
+			} catch (Exception e) {
+				 logger.error(e);
+			}
+		}
+		return titanGraph;
+	}
+
+	@SuppressWarnings("restriction")
+	public ScriptEngine getScriptEngine() {
+		if (scriptEngine == null) {
+			ScriptEngineManager manager = new ScriptEngineManager();
+            scriptEngine = manager.getEngineByName("gremlin-groovy");
+        }
+		return scriptEngine;
 	}		
 }
